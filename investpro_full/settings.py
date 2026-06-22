@@ -8,9 +8,9 @@ SECRET_KEY = 'django-insecure-investpro-secret-key-change-in-production'
 DEBUG = True
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = [
-    "investprotrade.com",
-    "www.investprotrade.com",
-    ".onrender.com",
+    'investprotrade.com',
+    'www.investprotrade.com',
+    '.onrender.com,
     'localhost',
     '127.0.0.1',
 ]
@@ -65,7 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'accounts.context_processors.site_context',
+                # 'accounts.context_processors.site_context',
             ],
         },
     },
