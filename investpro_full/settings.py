@@ -10,10 +10,14 @@ DEBUG = True
 ALLOWED_HOSTS = ['investpro-m02d.onrender.com', 'localhost','127.0.0.1',]
 
 
+# DATABASES = {
+#     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+# }
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL")
+    )
 }
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -64,12 +68,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'investpro_full.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = '/login/'
