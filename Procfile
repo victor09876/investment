@@ -1,0 +1,1 @@
+web: gunicorn investpro_full.wsgi:application
