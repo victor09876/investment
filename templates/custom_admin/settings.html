@@ -1,0 +1,100 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Site Settings{% endblock %}
+{% block content %}
+<div style="max-width:880px;">
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+  <!-- GENERAL -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-globe" style="color:var(--gold);margin-right:8px;"></i>General Settings</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Site Name</label><input type="text" name="site_name" class="form-control" value="{{ site.site_name }}"></div>
+      <div class="form-group"><label class="form-label">App Version</label><input type="text" name="app_version" class="form-control" value="{{ site.app_version }}"></div>
+      <div class="form-group"><label class="form-label">Currency Code</label><input type="text" name="currency" class="form-control" value="{{ site.currency }}" maxlength="10"></div>
+      <div class="form-group"><label class="form-label">Currency Symbol</label><input type="text" name="currency_symbol" class="form-control" value="{{ site.currency_symbol }}" maxlength="5"></div>
+      <div class="form-group"><label class="form-label">Timezone</label><input type="text" name="timezone" class="form-control" value="{{ site.timezone }}" placeholder="UTC"></div>
+      <div class="form-group"><label class="form-label">Records Per Page</label><input type="number" name="records_per_page" class="form-control" value="{{ site.records_per_page }}" min="5" max="100"></div>
+    </div>
+  </div>
+
+  <!-- FEATURE TOGGLES -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-toggle-on" style="color:var(--gold);margin-right:8px;"></i>Feature Toggles</div>
+    <div class="toggle-grid">
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Maintenance Mode</div><div class="toggle-item-sub">Block all user access</div></div><label class="toggle"><input type="checkbox" name="maintenance_mode" {% if site.maintenance_mode %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">User Registration</div><div class="toggle-item-sub">Allow new sign-ups</div></div><label class="toggle"><input type="checkbox" name="allow_registration" {% if site.allow_registration %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Registration Code Required</div><div class="toggle-item-sub">Require code to register</div></div><label class="toggle"><input type="checkbox" name="require_reg_code" {% if site.require_reg_code %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Email Verification</div><div class="toggle-item-sub">Verify email on signup</div></div><label class="toggle"><input type="checkbox" name="require_email_verify" {% if site.require_email_verify %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">KYC for Deposit</div><div class="toggle-item-sub">Require KYC before deposits</div></div><label class="toggle"><input type="checkbox" name="require_kyc_deposit" {% if site.require_kyc_deposit %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">KYC for Withdrawal</div><div class="toggle-item-sub">Require KYC before withdrawals</div></div><label class="toggle"><input type="checkbox" name="require_kyc_withdraw" {% if site.require_kyc_withdraw %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Secure Password</div><div class="toggle-item-sub">Enforce strong passwords</div></div><label class="toggle"><input type="checkbox" name="secure_password" {% if site.secure_password %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Balance Transfer</div><div class="toggle-item-sub">Allow user-to-user transfer</div></div><label class="toggle"><input type="checkbox" name="allow_transfer" {% if site.allow_transfer %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">User Ranking</div><div class="toggle-item-sub">Enable ranking system</div></div><label class="toggle"><input type="checkbox" name="allow_ranking" {% if site.allow_ranking %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Withdrawals on Holidays</div><div class="toggle-item-sub">Allow holiday withdrawals</div></div><label class="toggle"><input type="checkbox" name="allow_withdraw_holiday" {% if site.allow_withdraw_holiday %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Google Login</div><div class="toggle-item-sub">Allow sign in with Google</div></div><label class="toggle"><input type="checkbox" name="allow_google_login" {% if site.allow_google_login %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Apple Login</div><div class="toggle-item-sub">Allow sign in with Apple</div></div><label class="toggle"><input type="checkbox" name="allow_apple_login" {% if site.allow_apple_login %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">MetaMask Login</div><div class="toggle-item-sub">Allow Web3 wallet login</div></div><label class="toggle"><input type="checkbox" name="allow_metamask_login" {% if site.allow_metamask_login %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+      <div class="toggle-item"><div class="toggle-item-info"><div class="toggle-item-label">Investment Cancellation</div><div class="toggle-item-sub">Allow users to cancel active investments</div></div><label class="toggle"><input type="checkbox" name="allow_investment_cancellation" {% if site.allow_investment_cancellation %}checked{% endif %}><span class="toggle-slider"></span></label></div>
+    </div>
+  </div>
+
+  <!-- AUTOMATION -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-clock" style="color:var(--gold);margin-right:8px;"></i>Automation &amp; Timing</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Deposit Timeout (minutes)</label><input type="number" name="deposit_timeout_minutes" class="form-control" value="{{ site.deposit_timeout_minutes }}" min="5" max="180"><p class="form-hint">Pending deposit requests expire automatically after this many minutes.</p></div>
+      <div class="form-group"><label class="form-label">Cron Interval (minutes)</label><input type="number" name="cron_interval_minutes" class="form-control" value="{{ site.cron_interval_minutes }}" min="1" max="60"><p class="form-hint">How often ROI crediting, investment completion, and deposit expiry run automatically.</p></div>
+    </div>
+  </div>
+
+  <!-- FINANCIAL RULES -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-sack-dollar" style="color:var(--gold);margin-right:8px;"></i>Financial Rules</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div class="form-group"><label class="form-label">Min Deposit ($)</label><input type="number" name="min_deposit" class="form-control" value="{{ site.min_deposit }}" min="0" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Min Withdrawal ($)</label><input type="number" name="min_withdrawal" class="form-control" value="{{ site.min_withdrawal }}" min="0" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Withdrawal Fee (%)</label><input type="number" name="withdrawal_fee_pct" class="form-control" value="{{ site.withdrawal_fee_pct }}" min="0" step="0.1"></div>
+      <div class="form-group"><label class="form-label">Cancel Fee (%)</label><input type="number" name="cancellation_fee_pct" class="form-control" value="{{ site.cancellation_fee_pct }}" min="0" step="0.1"></div>
+      <div class="form-group"><label class="form-label">Welcome Bonus ($)</label><input type="number" name="welcome_bonus" class="form-control" value="{{ site.welcome_bonus }}" min="0" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Transfer Fee (%)</label><input type="number" name="transfer_fee_pct" class="form-control" value="{{ site.transfer_fee_pct }}" min="0" step="0.1"></div>
+    </div>
+  </div>
+
+  <!-- CRYPTO WALLETS -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-brands fa-bitcoin" style="color:var(--gold);margin-right:8px;"></i>Deposit Wallet Addresses</div>
+    <div class="form-group"><label class="form-label">Bitcoin (BTC)</label><input type="text" name="bitcoin_address" class="form-control" value="{{ site.bitcoin_address }}" placeholder="bc1q..."></div>
+    <div class="form-group"><label class="form-label">USDT TRC20</label><input type="text" name="usdt_trc20_address" class="form-control" value="{{ site.usdt_trc20_address }}" placeholder="T..."></div>
+    <div class="form-group"><label class="form-label">USDT ERC20</label><input type="text" name="usdt_erc20_address" class="form-control" value="{{ site.usdt_erc20_address }}" placeholder="0x..."></div>
+    <div class="form-group"><label class="form-label">Ethereum (ETH)</label><input type="text" name="ethereum_address" class="form-control" value="{{ site.ethereum_address }}" placeholder="0x..."></div>
+  </div>
+
+  <!-- BANK DETAILS -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-building-columns" style="color:var(--gold);margin-right:8px;"></i>Bank Transfer Details</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Bank Name</label><input type="text" name="bank_name" class="form-control" value="{{ site.bank_name }}"></div>
+      <div class="form-group"><label class="form-label">Account Name</label><input type="text" name="bank_account_name" class="form-control" value="{{ site.bank_account_name }}"></div>
+      <div class="form-group"><label class="form-label">Account Number</label><input type="text" name="bank_account_number" class="form-control" value="{{ site.bank_account_number }}"></div>
+      <div class="form-group"><label class="form-label">Routing / Sort Code</label><input type="text" name="bank_routing" class="form-control" value="{{ site.bank_routing }}"></div>
+      <div class="form-group"><label class="form-label">SWIFT / BIC</label><input type="text" name="bank_swift" class="form-control" value="{{ site.bank_swift }}"></div>
+    </div>
+  </div>
+
+  <!-- MAINTENANCE -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--gold);margin-right:8px;"></i>Maintenance Mode</div>
+    <div class="form-group"><label class="form-label">Maintenance Message</label><textarea name="maintenance_message" class="form-control" rows="3">{{ site.maintenance_message }}</textarea></div>
+    <div class="form-group"><label class="form-label">Maintenance Image</label>{% if site.maintenance_image %}<div style="margin-bottom:.5rem;"><img src="{{ site.maintenance_image.url }}" style="max-height:80px;border-radius:var(--radius);"></div>{% endif %}<input type="file" name="maintenance_image" class="form-control" accept="image/*"></div>
+  </div>
+
+  <!-- CUSTOM CSS -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-code" style="color:var(--gold);margin-right:8px;"></i>Custom CSS</div>
+    <div class="form-group"><textarea name="custom_css" class="form-control" rows="6" placeholder="/* Add custom CSS rules here */" style="font-family:monospace;font-size:.83rem;">{{ site.custom_css }}</textarea><p class="form-hint">Custom CSS is injected site-wide without editing source files.</p></div>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-floppy-disk"></i> Save All Settings</button>
+</form>
+</div>
+{% endblock %}

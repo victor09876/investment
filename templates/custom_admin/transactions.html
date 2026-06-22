@@ -1,0 +1,90 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Manage Transactions{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Transactions</h1>
+    <div style="display:flex;gap:8px;margin-top:.5rem;">
+      {% if pending_dep %}<span class="badge badge-warning">{{ pending_dep }} Pending Deposit{{ pending_dep|pluralize }}</span>{% endif %}
+      {% if pending_wth %}<span class="badge badge-danger">{{ pending_wth }} Pending Withdrawal{{ pending_wth|pluralize }}</span>{% endif %}
+    </div>
+  </div>
+</div>
+<!-- QUICK APPROVE PENDING -->
+{% if pending_dep or pending_wth %}
+<div class="card" style="margin-bottom:1.25rem;border-color:rgba(240,165,0,.2);background:rgba(240,165,0,.03);">
+  <div class="card-title" style="margin-bottom:1rem;color:var(--amber);">⏳ Pending Actions Required</div>
+  <form method="post" id="bulk-form">{% csrf_token %}
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:36px;"><input type="checkbox" id="check-all" style="accent-color:var(--gold);"></th><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Proof</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for t in transactions %}{% if t.status == 'pending' or t.status == 'processing' %}
+      <tr>
+        <td><input type="checkbox" name="txn_ids" value="{{ t.id }}" class="txn-check" style="accent-color:var(--gold);"></td>
+        <td><span style="font-family:monospace;font-size:.78rem;">#{{ t.txn_id }}</span></td>
+        <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.84rem;">{{ t.user.email }}</a></td>
+        <td><span class="badge {% if t.type == 'deposit' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:.68rem;">{{ t.get_type_display }}</span></td>
+        <td style="font-weight:700;">${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.82rem;color:var(--muted);">{{ t.get_method_display }}</td>
+        <td>{% if t.proof_image %}<a href="{{ t.proof_image.url }}" target="_blank" class="btn btn-ghost btn-sm"><i class="fa-solid fa-paperclip"></i> View</a>{% else %}<span style="color:var(--faint);font-size:.8rem;">None</span>{% endif %}</td>
+        <td style="font-size:.79rem;color:var(--faint);">{{ t.created_at|date:"M d H:i" }}</td>
+      </tr>
+      {% endif %}{% endfor %}
+      </tbody>
+    </table></div>
+    <div style="display:flex;gap:9px;margin-top:1rem;">
+      <button type="submit" name="action" value="approve" class="btn btn-success" onclick="return confirm('Approve selected transactions?')"><i class="fa-solid fa-check"></i> Approve Selected</button>
+      <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return confirm('Reject selected transactions? Withdrawals will be refunded.')"><i class="fa-solid fa-xmark"></i> Reject Selected</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+<!-- ALL TRANSACTIONS -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:160px;"><label class="form-label">Search</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" name="q" class="form-control" placeholder="ID, email..." value="{{ q }}"></div></div>
+    <div style="min-width:130px;"><label class="form-label">Type</label><select name="type" class="form-control"><option value="">All Types</option><option value="deposit" {% if txn_type == 'deposit' %}selected{% endif %}>Deposits</option><option value="withdrawal" {% if txn_type == 'withdrawal' %}selected{% endif %}>Withdrawals</option><option value="roi" {% if txn_type == 'roi' %}selected{% endif %}>ROI</option><option value="investment" {% if txn_type == 'investment' %}selected{% endif %}>Investments</option></select></div>
+    <div style="min-width:130px;"><label class="form-label">Status</label><select name="status" class="form-control"><option value="">All Status</option><option value="pending" {% if txn_status == 'pending' %}selected{% endif %}>Pending</option><option value="processing" {% if txn_status == 'processing' %}selected{% endif %}>Processing</option><option value="completed" {% if txn_status == 'completed' %}selected{% endif %}>Completed</option><option value="failed" {% if txn_status == 'failed' %}selected{% endif %}>Failed</option></select></div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'admin_transactions' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-xmark"></i> Clear</a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Reference</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td><span style="font-family:monospace;font-size:.78rem;">#{{ t.txn_id }}</span></td>
+        <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.83rem;">{{ t.user.email }}</a></td>
+        <td><span class="badge badge-gold" style="font-size:.67rem;">{{ t.get_type_display }}</span></td>
+        <td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.81rem;color:var(--muted);">{{ t.get_method_display }}</td>
+        <td style="font-size:.75rem;color:var(--faint);">{{ t.reference|truncatechars:20|default:"—" }}</td>
+        <td style="font-size:.79rem;color:var(--faint);">{{ t.created_at|date:"M d H:i" }}</td>
+        <td><span class="badge {{ t.status_class }}">{{ t.get_status_display }}</span></td>
+        <td>
+          {% if t.status in 'pending,processing' %}
+          <form method="post" style="display:flex;gap:5px;">{% csrf_token %}<input type="hidden" name="txn_ids" value="{{ t.id }}">
+            <button name="action" value="approve" type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve?')"><i class="fa-solid fa-check"></i></button>
+            <button name="action" value="reject" type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject?')"><i class="fa-solid fa-xmark"></i></button>
+          </form>
+          {% else %}<span style="color:var(--faint);font-size:.8rem;">—</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:var(--faint);padding:2.5rem;">No transactions found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('check-all')?.addEventListener('change',function(){
+  document.querySelectorAll('.txn-check').forEach(c=>c.checked=this.checked);
+});
+</script>
+{% endblock %}

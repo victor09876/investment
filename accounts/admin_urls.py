@@ -1,0 +1,26 @@
+from django.urls import path
+from . import admin_views as v
+
+urlpatterns = [
+    path('',                   v.admin_dashboard,          name='admin_dashboard'),
+    path('users/',             v.admin_users,              name='admin_users'),
+    path('users/<uuid:pk>/',   v.admin_user_detail,        name='admin_user_detail'),
+    path('transactions/',      v.admin_transactions,       name='admin_transactions'),
+    path('investments/',       v.admin_investments,        name='admin_investments'),
+    path('plans/',             v.admin_plans,              name='admin_plans'),
+    path('settings/',          v.admin_settings,           name='admin_settings'),
+    path('branding/',          v.admin_branding,           name='admin_branding'),
+    path('reg-codes/',         v.admin_reg_codes,          name='admin_reg_codes'),
+    path('kyc/',               v.admin_kyc,               name='admin_kyc'),
+    path('ranks/',             v.admin_ranks,             name='admin_ranks'),
+    path('tickets/',           v.admin_tickets,           name='admin_tickets'),
+    path('tickets/<uuid:pk>/', v.admin_ticket_detail,     name='admin_ticket_detail'),
+    path('notifications/',     v.admin_notifications_list, name='admin_notifications_list'),
+    path('notifications/send/',v.admin_notifications_send, name='admin_notifications_send'),
+    path('server-info/',       v.admin_server_info,        name='admin_server_info'),
+    path('app-info/',          v.admin_app_info,           name='admin_app_info'),
+    path('cache/',             v.admin_cache,             name='admin_cache'),
+    path('cron/',              v.admin_cron,              name='admin_cron'),
+    path('login-analytics/',   v.admin_login_analytics,   name='admin_login_analytics'),
+    path('credit-roi/',        v.admin_credit_roi,        name='admin_credit_roi'),
+]

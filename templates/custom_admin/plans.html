@@ -1,0 +1,75 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Plans{% endblock %}
+{% block page_title %}Manage Plans{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Investment Plans</h1><p class="page-subtitle">{{ plans.count }} plans configured</p></div><button class="btn btn-primary" onclick="openModal('create-plan-modal')">+ New Plan</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+{% for plan in plans %}
+<div class="plan-card {% if plan.is_featured %}featured{% endif %}" style="{% if not plan.is_active %}opacity:.6;{% endif %}">
+  {% if plan.is_featured %}<div style="position:absolute;top:1rem;right:1rem;"><span class="badge badge-gold">⭐ Featured</span></div>{% endif %}
+  <div style="position:absolute;top:1rem;left:1rem;"><span class="badge {% if plan.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if plan.is_active %}Active{% else %}Inactive{% endif %}</span></div>
+  <div style="margin-top:1.5rem;">
+    <div class="plan-icon" style="background:rgba(201,168,76,.1);color:var(--gold);"><i class="fa-solid fa-{{ plan.fa_icon }}"></i></div>
+    <div style="font-family:var(--ff-d);font-size:1.05rem;font-weight:700;">{{ plan.name }}</div>
+    <div class="plan-rate">{{ plan.daily_roi }}%</div>
+    <div class="plan-period">daily · {{ plan.duration_days }} days</div>
+    <div class="plan-range">Min: ${{ plan.min_amount|floatformat:0 }} · Max: {% if plan.max_amount %}${{ plan.max_amount|floatformat:0 }}{% else %}∞{% endif %}</div>
+    <div style="font-size:.8rem;color:var(--faint);margin-bottom:1.1rem;">Referral bonus: {{ plan.referral_bonus_pct }}%</div>
+    <div style="display:flex;gap:8px;">
+      <form method="post" style="flex:1;">{% csrf_token %}<input type="hidden" name="action" value="toggle"><input type="hidden" name="plan_id" value="{{ plan.id }}"><button type="submit" class="btn {% if plan.is_active %}btn-warning{% else %}btn-success{% endif %} btn-sm btn-block">{% if plan.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="plan_id" value="{{ plan.id }}"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this plan?')"><i class="fa-solid fa-trash"></i></button></form>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon"><i class="fa-solid fa-gem"></i></div><div class="empty-state-title">No plans yet</div><div class="empty-state-text">Create your first investment plan.</div></div>
+{% endfor %}
+</div>
+<!-- CREATE PLAN MODAL -->
+<div class="modal-overlay" id="create-plan-modal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header"><div class="modal-title">Create Investment Plan</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="create">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Plan Name</label><input type="text" name="name" class="form-control" placeholder="Gold Plan" required></div>
+        <div class="form-group"><label class="form-label">Slug</label><input type="text" name="slug" class="form-control" placeholder="gold-plan" required></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Icon</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select name="icon" class="form-control" onchange="document.getElementById('icon-preview').className='fa-solid fa-'+this.value">
+              <option value="gem">Gem</option>
+              <option value="rocket">Rocket</option>
+              <option value="chart-line">Chart Line</option>
+              <option value="coins">Coins</option>
+              <option value="sack-dollar">Sack Dollar</option>
+              <option value="crown">Crown</option>
+              <option value="star">Star</option>
+              <option value="bolt">Bolt</option>
+              <option value="shield-halved">Shield</option>
+              <option value="seedling">Seedling</option>
+              <option value="fire">Fire</option>
+              <option value="trophy">Trophy</option>
+            </select>
+            <div style="width:40px;height:40px;border-radius:8px;background:var(--teal-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i id="icon-preview" class="fa-solid fa-gem" style="color:var(--gold);"></i></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Daily ROI (%)</label><input type="number" name="daily_roi" class="form-control" placeholder="3.5" step="0.1" min="0.1" max="100" required></div>
+        <div class="form-group"><label class="form-label">Duration (days)</label><input type="number" name="duration_days" class="form-control" placeholder="90" min="1" required></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Min Amount ($)</label><input type="number" name="min_amount" class="form-control" placeholder="100" min="1" step="0.01" required></div>
+        <div class="form-group"><label class="form-label">Max Amount ($)</label><input type="number" name="max_amount" class="form-control" placeholder="Leave blank = unlimited" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Referral Bonus (%)</label><input type="number" name="referral_bonus_pct" class="form-control" value="5" min="0" step="0.1"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description (optional)</label><textarea name="description" class="form-control" rows="2" placeholder="Brief description of this plan"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Sort Order</label><input type="number" name="sort_order" class="form-control" value="0" min="0"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:1.75rem;"><label class="toggle"><input type="checkbox" name="is_featured"><span class="toggle-slider"></span></label><span style="font-size:.85rem;">Featured Plan</span></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Create Plan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

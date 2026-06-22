@@ -1,0 +1,112 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}KYC Management{% endblock %}
+{% block page_title %}KYC Management{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">KYC Management</h1><p class="page-subtitle">Manage verification fields and review submissions</p></div><button class="btn btn-primary" onclick="openModal('new-field-modal')"><i class="fa-solid fa-plus"></i> New Field</button></div>
+
+<div class="grid-3" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-hourglass-half"></i></div><div class="s-label">Pending Review</div><div class="s-value">{{ submissions.count }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-circle-check"></i></div><div class="s-label">Total Approved</div><div class="s-value">{{ all_subs|length }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-list-check"></i></div><div class="s-label">KYC Fields</div><div class="s-value">{{ fields.count }}</div></div>
+</div>
+
+<!-- PENDING SUBMISSIONS -->
+{% if submissions %}
+<div class="card" style="margin-bottom:1.5rem;">
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-hourglass-half" style="color:var(--amber);margin-right:8px;"></i>Pending Submissions</div></div>
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+  {% for sub in submissions %}
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--navy-3);border-radius:var(--radius);flex-wrap:wrap;gap:1rem;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="avatar-ph" style="width:36px;height:36px;font-size:.85rem;">{{ sub.user.initials }}</div>
+      <div><div style="font-weight:600;font-size:.88rem;">{{ sub.user.full_name }}</div><div style="font-size:.76rem;color:var(--faint);">{{ sub.user.email }} &middot; Submitted {{ sub.submitted_at|date:"M d, Y" }}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a href="{% url 'admin_user_detail' sub.user.id %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+      <button class="btn btn-success btn-sm" onclick="openReview('{{ sub.id }}','approved')"><i class="fa-solid fa-check"></i> Approve</button>
+      <button class="btn btn-danger btn-sm" onclick="openReview('{{ sub.id }}','rejected')"><i class="fa-solid fa-xmark"></i> Reject</button>
+    </div>
+  </div>
+  {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- KYC FIELDS -->
+<div class="card">
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-list-check" style="color:var(--gold);margin-right:8px;"></i>KYC Form Fields</div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Order</th><th>Label</th><th>Type</th><th>Required</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for f in fields %}
+      <tr>
+        <td>{{ f.sort_order }}</td>
+        <td>{{ f.label }}</td>
+        <td><span class="badge badge-gold">{{ f.get_field_type_display }}</span></td>
+        <td>{% if f.is_required %}<i class="fa-solid fa-check" style="color:var(--green);"></i>{% else %}<i class="fa-solid fa-minus" style="color:var(--faint);"></i>{% endif %}</td>
+        <td>
+          <form method="post" style="display:inline;">{% csrf_token %}<input type="hidden" name="action" value="toggle_field"><input type="hidden" name="field_id" value="{{ f.id }}">
+            <button type="submit" class="badge {% if f.is_active %}badge-success{% else %}badge-danger{% endif %}" style="border:none;cursor:pointer;">{% if f.is_active %}Active{% else %}Inactive{% endif %}</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" style="display:inline;">{% csrf_token %}<input type="hidden" name="action" value="delete_field"><input type="hidden" name="field_id" value="{{ f.id }}"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm_field(event)"><i class="fa-solid fa-trash"></i></button></form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--faint);padding:2.5rem;">No KYC fields configured yet. Click "New Field" to create one.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- NEW FIELD MODAL -->
+<div class="modal-overlay" id="new-field-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"><i class="fa-solid fa-plus" style="color:var(--gold);margin-right:8px;"></i>New KYC Field</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="create_field">
+      <div class="form-group"><label class="form-label">Field Label</label><input type="text" name="label" class="form-control" placeholder="e.g. Passport Number" required></div>
+      <div class="form-group"><label class="form-label">Field Type</label><select name="field_type" class="form-control" onchange="toggleOptionsField(this)">
+        <option value="text">Text</option><option value="number">Number</option><option value="email">Email</option>
+        <option value="select">Select / Dropdown</option><option value="date">Date</option>
+        <option value="file">File Upload</option><option value="image">Image Upload</option><option value="textarea">Text Area</option>
+      </select></div>
+      <div class="form-group" id="options-group" style="display:none;"><label class="form-label">Options (comma-separated)</label><input type="text" name="options" class="form-control" placeholder="Option A, Option B, Option C"></div>
+      <div class="form-group"><label class="form-label">Placeholder</label><input type="text" name="placeholder" class="form-control" placeholder="Helper text for the field"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Sort Order</label><input type="number" name="sort_order" class="form-control" value="0"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:1.75rem;"><label class="toggle"><input type="checkbox" name="is_required" checked><span class="toggle-slider"></span></label><span style="font-size:.85rem;">Required</span></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-plus"></i> Create Field</button>
+    </form>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="review-modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><div class="modal-title" id="review-title">Review KYC</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post" id="review-form">{% csrf_token %}<input type="hidden" name="action" value="review"><input type="hidden" name="sub_id" id="review-sub-id"><input type="hidden" name="status" id="review-status">
+      <div class="form-group"><label class="form-label">Note (optional)</label><textarea name="note" class="form-control" rows="3" placeholder="Reason or comment for the user..."></textarea></div>
+      <button type="submit" class="btn btn-primary btn-block" id="review-submit-btn"><i class="fa-solid fa-check"></i> Confirm</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleOptionsField(sel){ document.getElementById('options-group').style.display = sel.value==='select'?'':'none'; }
+function openReview(subId, status){
+  document.getElementById('review-sub-id').value=subId;
+  document.getElementById('review-status').value=status;
+  document.getElementById('review-title').textContent = status==='approved' ? 'Approve KYC Submission' : 'Reject KYC Submission';
+  const btn = document.getElementById('review-submit-btn');
+  btn.className = status==='approved' ? 'btn btn-success btn-block' : 'btn btn-danger btn-block';
+  btn.innerHTML = status==='approved' ? '<i class="fa-solid fa-check"></i> Approve' : '<i class="fa-solid fa-xmark"></i> Reject';
+  openModal('review-modal');
+}
+function confirm_field(e){ return true; }
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+{% block title %}My Investments{% endblock %}
+{% block page_title %}My Investments{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">My Investments</h1><p class="page-subtitle">Track all your running, completed and cancelled investments</p></div><a href="{% url 'plans' %}" class="btn btn-primary">+ New Investment</a></div>
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-rotate"></i></div><div class="s-label">Running</div><div class="s-value">{{ active.count }}</div><div class="s-change flat">${{ stats.active_total|floatformat:2 }} invested</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-circle-check"></i></div><div class="s-label">Completed</div><div class="s-value">{{ completed.count }}</div><div class="s-change up">+${{ stats.completed_profit|floatformat:2 }} earned</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--red-bg);color:var(--red);"><i class="fa-solid fa-xmark"></i></div><div class="s-label">Cancelled</div><div class="s-value">{{ cancelled.count }}</div><div class="s-change flat">Refunded</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-sack-dollar"></i></div><div class="s-label">Total Profit</div><div class="s-value" style="color:var(--gold);">${{ stats.total_profit|floatformat:2 }}</div><div class="s-change up">All time</div></div>
+</div>
+<div class="tabs-wrap">
+  <div class="tabs" style="max-width:420px;margin-bottom:1.5rem;">
+    <button class="tab-btn {% if tab == 'active' %}active{% endif %}" data-tab="active"><i class="fa-solid fa-rotate"></i> Running ({{ active.count }})</button>
+    <button class="tab-btn {% if tab == 'completed' %}active{% endif %}" data-tab="completed"><i class="fa-solid fa-circle-check"></i> Done ({{ completed.count }})</button>
+    <button class="tab-btn {% if tab == 'cancelled' %}active{% endif %}" data-tab="cancelled"><i class="fa-solid fa-xmark"></i> Cancelled ({{ cancelled.count }})</button>
+  </div>
+  <!-- ACTIVE -->
+  <div id="tab-active" class="tab-panel" {% if tab != 'active' %}style="display:none;"{% endif %}>
+    {% if active %}
+    <div style="display:flex;flex-direction:column;gap:1.1rem;">
+    {% for inv in active %}
+    <div class="invest-card">
+      <div class="invest-card-top">
+        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</div><div class="invest-detail">#{{ inv.id|stringformat:"s"|slice:":8" |upper }} · Started {{ inv.start_date|date:"M d, Y" }}</div></div>
+        <div style="text-align:right;"><div class="invest-amount">${{ inv.amount|floatformat:2 }}</div><span class="badge badge-success" style="margin-top:4px;">Active</span></div>
+      </div>
+      <div style="margin:1rem 0 .5rem;"><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--faint);margin-bottom:6px;"><span>{{ inv.progress_pct }}% complete</span><span>Ends {{ inv.end_date|date:"M d, Y" }} · {{ inv.days_remaining }} days left</span></div><div class="progress"><div class="progress-bar" data-progress="{{ inv.progress_pct }}" style="width:0;"></div></div></div>
+      <div class="invest-meta" style="grid-template-columns:repeat(4,1fr);">
+        <div class="invest-meta-item"><div class="invest-meta-label">Daily ROI</div><div class="invest-meta-value" style="color:var(--green);">{{ inv.plan.daily_roi }}%</div></div>
+        <div class="invest-meta-item"><div class="invest-meta-label">Daily Profit</div><div class="invest-meta-value" style="color:var(--green);">${{ inv.daily_profit|floatformat:2 }}</div></div>
+        <div class="invest-meta-item"><div class="invest-meta-label">Earned</div><div class="invest-meta-value" style="color:var(--gold);">${{ inv.profit_earned|floatformat:2 }}</div></div>
+        <div class="invest-meta-item"><div class="invest-meta-label">Total Return</div><div class="invest-meta-value">${{ inv.expected_total|floatformat:2 }}</div></div>
+      </div>
+      {% if site_settings.allow_investment_cancellation %}
+      <div style="display:flex;gap:9px;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border-s);">
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('cancel-{{ inv.id }}').classList.add('open')"><i class="fa-solid fa-xmark"></i> Cancel Investment</button>
+      </div>
+      {% endif %}
+    </div>
+    <!-- Cancel Modal -->
+    <div class="modal-overlay" id="cancel-{{ inv.id }}">
+      <div class="modal" style="max-width:400px;">
+        <div class="modal-header"><div class="modal-title">Cancel Investment</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+        <div style="text-align:center;padding:.5rem 0 1rem;">
+          <div style="font-size:2.25rem;margin-bottom:.9rem;"><i class="fa-solid fa-triangle-exclamation"></i>️</div>
+          <p style="color:var(--muted);font-size:.88rem;line-height:1.7;margin-bottom:1.5rem;">Cancel <strong>{{ inv.plan.name }}</strong> (${{ inv.amount|floatformat:2 }})? A <strong style="color:var(--red);">5% cancellation fee</strong> will apply.</p>
+          <div style="display:flex;gap:9px;">
+            <button class="btn btn-ghost" style="flex:1;" onclick="document.getElementById('cancel-{{ inv.id }}').classList.remove('open')">Keep It</button>
+            <form method="post" action="{% url 'cancel_investment' inv.id %}" style="flex:2;">{% csrf_token %}<button type="submit" class="btn btn-danger btn-block">Yes, Cancel</button></form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-rotate"></i></div><div class="empty-state-title">No active investments</div><div class="empty-state-text">Start investing to see them here.</div><a href="{% url 'plans' %}" class="btn btn-primary btn-sm">Browse Plans</a></div>{% endif %}
+  </div>
+  <!-- COMPLETED -->
+  <div id="tab-completed" class="tab-panel" {% if tab != 'completed' %}style="display:none;"{% endif %}>
+    {% if completed %}<div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Plan</th><th>Invested</th><th>Profit</th><th>Total</th><th>Duration</th><th>Completed</th></tr></thead><tbody>
+    {% for inv in completed %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--green);font-weight:600;">+${{ inv.profit_earned|floatformat:2 }}</td><td style="font-weight:700;color:var(--gold);">${{ inv.expected_total|floatformat:2 }}</td><td>{{ inv.plan.duration_days }} days</td><td>{{ inv.end_date|date:"M d, Y" }}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+    {% else %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-circle-check"></i></div><div class="empty-state-title">No completed investments yet</div></div>{% endif %}
+  </div>
+  <!-- CANCELLED -->
+  <div id="tab-cancelled" class="tab-panel" {% if tab != 'cancelled' %}style="display:none;"{% endif %}>
+    {% if cancelled %}<div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Plan</th><th>Invested</th><th>Fee</th><th>Refunded</th><th>Cancelled</th></tr></thead><tbody>
+    {% for inv in cancelled %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--red);">-5%</td><td style="color:var(--green);font-weight:600;">${{ inv.amount|floatformat:2 }}</td><td>{{ inv.updated_at|date:"M d, Y" }}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+    {% else %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-xmark"></i></div><div class="empty-state-title">No cancelled investments</div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Users{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Users</h1><p class="page-subtitle">{{ users.count }} total users</p></div>
+  <a href="{% url 'admin_users' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i> Export</a>
+</div>
+<!-- FILTERS -->
+<div class="card" style="margin-bottom:1.4rem;">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:180px;"><label class="form-label">Search</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" name="q" class="form-control" placeholder="Name, email, phone..." value="{{ q }}"></div></div>
+    <div style="min-width:130px;"><label class="form-label">Status</label><select name="status" class="form-control"><option value="">All</option><option value="active" {% if status == 'active' %}selected{% endif %}>Active</option><option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option></select></div>
+    <div style="min-width:130px;"><label class="form-label">KYC</label><select name="kyc" class="form-control"><option value="">All KYC</option><option value="pending" {% if kyc == 'pending' %}selected{% endif %}>Pending</option><option value="verified" {% if kyc == 'verified' %}selected{% endif %}>Verified</option><option value="rejected" {% if kyc == 'rejected' %}selected{% endif %}>Rejected</option></select></div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'admin_users' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-xmark"></i> Clear</a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User</th><th>Country</th><th>Wallet</th><th>Profit</th><th>Investments</th><th>KYC</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:9px;">
+            <div class="avatar-ph" style="width:30px;height:30px;font-size:.72rem;flex-shrink:0;">{{ u.initials }}</div>
+            <div><div style="font-weight:600;font-size:.86rem;">{{ u.full_name }}</div><div style="font-size:.74rem;color:var(--faint);">{{ u.email }}</div></div>
+          </div>
+        </td>
+        <td>{{ u.country|default:"—" }}</td>
+        <td style="color:var(--gold);font-weight:600;">${{ u.wallet_balance|floatformat:2 }}</td>
+        <td style="color:var(--green);font-weight:600;">${{ u.profit_balance|floatformat:2 }}</td>
+        <td>{{ u.inv_count }}</td>
+        <td><span class="badge {% if u.is_kyc_verified %}badge-success{% elif u.kyc_status == 'rejected' %}badge-danger{% elif u.kyc_status == 'not_submitted' %}badge-info{% else %}badge-warning{% endif %}">{{ u.get_kyc_status_display }}</span></td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ u.date_joined|date:"M d, Y" }}</td>
+        <td><span class="badge {% if u.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if u.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        <td><a href="{% url 'admin_user_detail' u.id %}" class="btn btn-ghost btn-sm">View →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:var(--faint);padding:2.5rem;">No users found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

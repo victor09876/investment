@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Admin{% endblock %} — Admin Panel</title>
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% if branding.favicon %}<link rel="icon" href="{{ branding.favicon.url }}">{% endif %}
+{% if site_settings.custom_css %}<style>{{ site_settings.custom_css }}</style>{% endif %}
+</head>
+<body>
+<div class="admin-top"></div>
+{% if messages %}<div id="django-messages" style="display:none;">{% for m in messages %}<span data-type="{{ m.tags }}" data-msg="{{ m.message }}"></span>{% endfor %}</div>{% endif %}
+<div class="app-layout">
+  <aside class="sidebar admin-sidebar" id="sidebar" style="padding-top:3px;">
+    <div class="sidebar-logo" style="border-bottom:1px solid rgba(255,255,255,.06);">
+      {% if branding.site_logo %}<img src="{{ branding.site_logo.url }}" alt="Logo" style="height:30px;object-fit:contain;">
+      {% else %}<div class="sidebar-logo-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="sidebar-logo-text"><span style="color:var(--amber);">Admin</span>Pro</div>{% endif %}
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label" style="color:#4A5580;">Overview</div>
+      <a href="{% url 'admin_dashboard' %}" class="admin-nav-item nav-item {% if request.path == '/panel/' %}active{% endif %}"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
+      <div class="nav-section-label" style="color:#4A5580;">Users & Finance</div>
+      <a href="{% url 'admin_users' %}" class="admin-nav-item nav-item {% if '/panel/users/' in request.path %}active{% endif %}"><i class="fa-solid fa-users"></i>Users</a>
+      <a href="{% url 'admin_transactions' %}" class="admin-nav-item nav-item {% if '/panel/transactions/' in request.path %}active{% endif %}">
+        <i class="fa-solid fa-receipt"></i>Transactions{% if pending_txns_count %}<span class="admin-badge-pill" style="margin-left:auto;">{{ pending_txns_count }}</span>{% endif %}
+      </a>
+      <a href="{% url 'admin_investments' %}" class="admin-nav-item nav-item {% if '/panel/investments/' in request.path %}active{% endif %}"><i class="fa-solid fa-chart-line"></i>Investments</a>
+      <a href="{% url 'admin_plans' %}" class="admin-nav-item nav-item {% if '/panel/plans/' in request.path %}active{% endif %}"><i class="fa-solid fa-gem"></i>Plans</a>
+      <div class="nav-section-label" style="color:#4A5580;">Support</div>
+      <a href="{% url 'admin_tickets' %}" class="admin-nav-item nav-item {% if '/panel/tickets/' in request.path %}active{% endif %}"><i class="fa-solid fa-headset"></i>Tickets</a>
+      <a href="{% url 'admin_notifications_list' %}" class="admin-nav-item nav-item {% if '/panel/notifications/' in request.path %}active{% endif %}"><i class="fa-solid fa-bell"></i>Notifications</a>
+      <a href="{% url 'admin_kyc' %}" class="admin-nav-item nav-item {% if request.path == '/panel/kyc/' %}active{% endif %}"><i class="fa-solid fa-id-card"></i>KYC</a>
+      <a href="{% url 'admin_ranks' %}" class="admin-nav-item nav-item {% if request.path == '/panel/ranks/' %}active{% endif %}"><i class="fa-solid fa-trophy"></i>Rankings</a>
+      <div class="nav-section-label" style="color:#4A5580;">Configuration</div>
+      <a href="{% url 'admin_settings' %}" class="admin-nav-item nav-item {% if request.path == '/panel/settings/' %}active{% endif %}"><i class="fa-solid fa-gear"></i>Settings</a>
+      <a href="{% url 'admin_branding' %}" class="admin-nav-item nav-item {% if request.path == '/panel/branding/' %}active{% endif %}"><i class="fa-solid fa-palette"></i>Branding</a>
+      <a href="{% url 'admin_reg_codes' %}" class="admin-nav-item nav-item {% if request.path == '/panel/reg-codes/' %}active{% endif %}"><i class="fa-solid fa-ticket"></i>Reg. Codes</a>
+      <div class="nav-section-label" style="color:#4A5580;">System</div>
+      <a href="{% url 'admin_app_info' %}" class="admin-nav-item nav-item {% if request.path == '/panel/app-info/' %}active{% endif %}"><i class="fa-solid fa-circle-info"></i>App Info</a>
+      <a href="{% url 'admin_server_info' %}" class="admin-nav-item nav-item {% if request.path == '/panel/server-info/' %}active{% endif %}"><i class="fa-solid fa-server"></i>Server Info</a>
+      <a href="{% url 'admin_cache' %}" class="admin-nav-item nav-item {% if request.path == '/panel/cache/' %}active{% endif %}"><i class="fa-solid fa-trash-can"></i>Clear Cache</a>
+      <a href="{% url 'admin_cron' %}" class="admin-nav-item nav-item {% if request.path == '/panel/cron/' %}active{% endif %}"><i class="fa-solid fa-clock"></i>Cron Jobs</a>
+      <a href="{% url 'admin_login_analytics' %}" class="admin-nav-item nav-item {% if request.path == '/panel/login-analytics/' %}active{% endif %}"><i class="fa-solid fa-chart-bar"></i>Login Analytics</a>
+      <div style="height:1px;background:rgba(255,255,255,.05);margin:.75rem 1rem;"></div>
+      <form method="post" action="{% url 'admin_credit_roi' %}" style="padding:0 .75rem .5rem;">{% csrf_token %}<button type="button" onclick="openModal('confirm-roi-modal')" class="btn btn-warning btn-sm btn-block"><i class="fa-solid fa-bolt"></i> Run Tasks Now</button></form>
+      <a href="{% url 'dashboard' %}" class="admin-nav-item nav-item" style="color:var(--muted);"><i class="fa-solid fa-house"></i>User Dashboard</a>
+      <a href="{% url 'logout' %}" class="admin-nav-item nav-item" style="color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+    </nav>
+    <div style="padding:.75rem;font-size:.7rem;color:#3A4560;text-align:center;">v{{ site_settings.app_version|default:"1.0.0" }}</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <header class="topbar">
+    <div class="topbar-left"><button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button><div class="topbar-title">{% block page_title %}Admin{% endblock %}</div><span class="badge badge-warning" style="font-size:.67rem;"><i class="fa-solid fa-shield-halved"></i> Staff</span></div>
+    <div class="topbar-right">
+      <div style="font-size:.82rem;color:var(--muted);">{{ request.user.full_name }}</div>
+      <div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ request.user.initials }}</div>
+    </div>
+  </header>
+  <main class="main-content">{% block content %}{% endblock %}</main>
+</div>
+<div id="toast-container"></div>
+
+<!-- ROI CONFIRM MODAL -->
+<div class="modal-overlay confirm-modal" id="confirm-roi-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header"><div class="modal-title">Credit Daily ROI</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-icon" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-bolt"></i></div>
+      <h3>Run Scheduled Tasks Now?</h3>
+      <p>This will immediately credit daily ROI, complete matured investments, and expire stale deposits — the same tasks that run automatically every few minutes. Useful for testing.</p>
+    </div>
+    <div style="display:flex;gap:9px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('confirm-roi-modal')"><i class="fa-solid fa-xmark"></i> Cancel</button>
+      <form method="post" action="{% url 'admin_credit_roi' %}" style="flex:2;">{% csrf_token %}<button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-bolt"></i> Confirm</button></form>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('#django-messages span').forEach(s=>{
+    const t=s.dataset.type.includes('error')||s.dataset.type.includes('danger')?'danger':s.dataset.type.includes('warning')?'warning':s.dataset.type.includes('info')?'info':'success';
+    showToast(s.dataset.msg,t,4000);
+  });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

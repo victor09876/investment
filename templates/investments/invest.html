@@ -1,0 +1,76 @@
+{% extends 'layout.html' %}
+{% block title %}Invest in {{ plan.name }}{% endblock %}
+{% block page_title %}Invest in {{ plan.name }}{% endblock %}
+{% block content %}
+<div style="max-width:700px;margin:0 auto;">
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.75rem;">
+    <a href="{% url 'plans' %}" class="btn btn-ghost btn-sm">← Back to Plans</a>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+    <!-- PLAN SUMMARY -->
+    <div class="card card-gold">
+      <div class="plan-icon" style="background:rgba(201,168,76,.1);color:var(--gold);"><i class="fa-solid fa-{{ plan.fa_icon }}"></i></div>
+      <div style="font-family:var(--ff-d);font-size:1.2rem;font-weight:700;margin-bottom:4px;">{{ plan.name }}</div>
+      <div style="font-size:.82rem;color:var(--faint);margin-bottom:1.25rem;">{{ plan.description|default:"Earn daily returns on your investment" }}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:.87rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Daily ROI</span><span style="font-weight:700;color:var(--green);">{{ plan.daily_roi }}%</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Duration</span><span style="font-weight:600;">{{ plan.duration_days }} days</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Min Amount</span><span style="font-weight:600;">${{ plan.min_amount|floatformat:2 }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Max Amount</span><span style="font-weight:600;">{% if plan.max_amount %}${{ plan.max_amount|floatformat:2 }}{% else %}Unlimited{% endif %}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Referral Bonus</span><span style="font-weight:600;">{{ plan.referral_bonus_pct }}%</span></div>
+        <div style="height:1px;background:var(--border-s);"></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Your wallet</span><span style="font-weight:700;color:var(--gold);">${{ request.user.wallet_balance|floatformat:2 }}</span></div>
+      </div>
+      <!-- CALCULATOR PREVIEW -->
+      <div style="margin-top:1.25rem;background:var(--navy-3);border-radius:var(--radius);padding:1rem;">
+        <div style="font-size:.75rem;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px;">Return Preview</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:.84rem;" id="preview">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Daily profit</span><span id="p-daily">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Total profit</span><span id="p-profit" style="color:var(--green);">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem;"><span>Total return</span><span id="p-total" style="font-family:var(--ff-d);font-weight:800;color:var(--gold);">$0.00</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- INVEST FORM -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.25rem;">Enter Investment Amount</div>
+      {% if request.user.wallet_balance == 0 %}
+      <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> Your wallet balance is $0.00. <a href="{% url 'deposit' %}" style="color:var(--amber);font-weight:600;text-decoration:underline;">Deposit funds first</a></div>
+      {% endif %}
+      <form method="post">{% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Amount (USD)</label>
+          <div class="input-wrap"><span class="input-icon" style="font-weight:700;">$</span><input type="number" name="amount" id="inv-amount" class="form-control" placeholder="{{ plan.min_amount }}" min="{{ plan.min_amount }}" {% if plan.max_amount %}max="{{ plan.max_amount }}"{% endif %} step="0.01" required oninput="updatePreview()"></div>
+          <p class="form-hint">Min: ${{ plan.min_amount|floatformat:2 }}{% if plan.max_amount %} · Max: ${{ plan.max_amount|floatformat:2 }}{% endif %}</p>
+        </div>
+        <!-- QUICK AMOUNTS -->
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.25rem;">
+          {% for amount in quick_amounts %}<button type="button" class="btn btn-outline btn-sm" onclick="setAmount({{ amount }})">{{ amount|floatformat:0 }}</button>{% empty %}
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmount({{ plan.min_amount }})">Min</button>
+          {% endfor %}
+        </div>
+        <div class="alert alert-info" style="font-size:.82rem;margin-bottom:1.25rem;">
+          <i class="fa-solid fa-circle-info"></i> Funds will be deducted from your wallet balance immediately. Your investment will start earning daily from tomorrow.
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" {% if request.user.wallet_balance == 0 %}disabled{% endif %}>
+          Activate Investment <i class="fa-solid fa-check"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const roi={{ plan.daily_roi }}, days={{ plan.duration_days }};
+function updatePreview(){
+  const amt=parseFloat(document.getElementById('inv-amount').value)||0;
+  const daily=amt*roi/100, profit=daily*days, total=amt+profit;
+  const fmt=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('p-daily').textContent=fmt(daily);
+  document.getElementById('p-profit').textContent=fmt(profit);
+  document.getElementById('p-total').textContent=fmt(total);
+}
+function setAmount(n){ document.getElementById('inv-amount').value=n; updatePreview(); }
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Support Tickets{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Support Tickets</h1><p class="page-subtitle">{{ tickets.count }} total tickets</p></div></div>
+<div style="margin-bottom:1.25rem;display:flex;gap:8px;flex-wrap:wrap;">
+  <a href="{% url 'admin_tickets' %}" class="btn {% if not status %}btn-primary{% else %}btn-outline{% endif %} btn-sm">All</a>
+  <a href="?status=open" class="btn {% if status == 'open' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"><i class="fa-solid fa-envelope-open"></i> Open</a>
+  <a href="?status=pending" class="btn {% if status == 'pending' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"><i class="fa-solid fa-clock"></i> Pending</a>
+  <a href="?status=resolved" class="btn {% if status == 'resolved' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"><i class="fa-solid fa-circle-check"></i> Resolved</a>
+  <a href="?status=closed" class="btn {% if status == 'closed' %}btn-primary{% else %}btn-outline{% endif %} btn-sm"><i class="fa-solid fa-ban"></i> Closed</a>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Ticket</th><th>User</th><th>Subject</th><th>Priority</th><th>Messages</th><th>Created</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for t in tickets %}
+      <tr>
+        <td><code style="color:var(--gold);">#{{ t.ticket_id }}</code></td>
+        <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.83rem;">{{ t.user.email|truncatechars:25 }}</a></td>
+        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ t.subject }}</td>
+        <td><span class="badge {% if t.priority == 'urgent' %}badge-danger{% elif t.priority == 'high' %}badge-warning{% elif t.priority == 'medium' %}badge-info{% else %}badge-gold{% endif %}">{{ t.get_priority_display }}</span></td>
+        <td>{{ t.messages.count }}</td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ t.created_at|date:"M d, Y" }}</td>
+        <td><span class="badge {% if t.status == 'open' %}badge-success{% elif t.status == 'pending' %}badge-warning{% elif t.status == 'resolved' %}badge-info{% else %}badge-danger{% endif %}">{{ t.get_status_display }}</span></td>
+        <td><a href="{% url 'admin_ticket_detail' t.id %}" class="btn btn-ghost btn-sm">View <i class="fa-solid fa-arrow-right"></i></a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;color:var(--faint);padding:3rem;">No tickets found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

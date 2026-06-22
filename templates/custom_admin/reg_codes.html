@@ -1,0 +1,75 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Registration Codes{% endblock %}
+{% block page_title %}Registration Codes{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Registration Codes</h1>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:.5rem;">
+      <span style="font-size:.85rem;color:var(--muted);">Require code on registration:</span>
+      <span class="badge {% if site.require_reg_code %}badge-success{% else %}badge-warning{% endif %}">{% if site.require_reg_code %}ON{% else %}OFF{% endif %}</span>
+      <a href="{% url 'admin_settings' %}" style="font-size:.8rem;color:var(--gold);">Toggle in Settings →</a>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('gen-modal')">+ Generate Codes</button>
+</div>
+<!-- STATS -->
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="s-label">Total Codes</div><div class="s-value">{{ codes.count }}</div></div>
+  <div class="stat-card"><div class="s-label">Active</div><div class="s-value" style="color:var(--green);">{{ codes|length }}</div></div>
+  <div class="stat-card"><div class="s-label">Total Uses</div><div class="s-value">{{ codes.count }}</div></div>
+  <div class="stat-card"><div class="s-label">Reg. Code Required</div><div class="s-value" style="color:{% if site.require_reg_code %}var(--green){% else %}var(--amber){% endif %};">{% if site.require_reg_code %}Yes{% else %}No{% endif %}</div></div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Label</th><th>Uses</th><th>Max Uses</th><th>Expires</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for code in codes %}
+      <tr>
+        <td><code style="color:var(--gold);font-size:.88rem;letter-spacing:.05em;">{{ code.code }}</code>
+          <button class="btn btn-ghost btn-sm" style="padding:3px 7px;margin-left:5px;" onclick="copyText('{{ code.code }}','Code copied!')"><i class="fa-solid fa-copy"></i></button>
+        </td>
+        <td>{{ code.label|default:"—" }}</td>
+        <td><strong>{{ code.times_used }}</strong></td>
+        <td>{% if code.max_uses == 0 %}∞{% else %}{{ code.max_uses }}{% endif %}</td>
+        <td style="font-size:.8rem;color:var(--faint);">{% if code.expires_at %}{{ code.expires_at|date:"M d, Y H:i" }}{% else %}Never{% endif %}</td>
+        <td>
+          {% if code.is_valid %}
+          <span class="badge badge-success">Valid</span>
+          {% elif not code.is_active %}
+          <span class="badge badge-danger">Disabled</span>
+          {% else %}
+          <span class="badge badge-warning">Exhausted</span>
+          {% endif %}
+        </td>
+        <td style="font-size:.79rem;color:var(--faint);">{{ code.created_at|date:"M d, Y" }}</td>
+        <td>
+          <div style="display:flex;gap:5px;">
+            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="toggle"><input type="hidden" name="code_id" value="{{ code.id }}"><button type="submit" class="btn btn-ghost btn-sm">{% if code.is_active %}🚫{% else %}<i class="fa-solid fa-circle-check"></i>{% endif %}</button></form>
+            <form method="post" onsubmit="return confirm('Delete this code?')">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="code_id" value="{{ code.id }}"><button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;color:var(--faint);padding:2.5rem;">No registration codes yet. Generate some above.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- GENERATE MODAL -->
+<div class="modal-overlay" id="gen-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header"><div class="modal-title">Generate Registration Codes</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="generate">
+      <div class="form-group"><label class="form-label">Number of Codes to Generate</label><input type="number" name="count" class="form-control" value="1" min="1" max="50" required></div>
+      <div class="form-group"><label class="form-label">Label (optional)</label><input type="text" name="label" class="form-control" placeholder="e.g. VIP Invite, Campaign A"></div>
+      <div class="form-group"><label class="form-label">Max Uses per Code</label><input type="number" name="max_uses" class="form-control" value="1" min="0"><p class="form-hint">0 = unlimited uses per code</p></div>
+      <div class="form-group"><label class="form-label">Expires At (optional)</label><input type="datetime-local" name="expires_at" class="form-control"></div>
+      <div class="alert alert-info" style="margin-bottom:1.25rem;font-size:.82rem;"><i class="fa-solid fa-circle-info"></i> Codes will be randomly generated. Each code is unique and case-sensitive.</div>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-ticket"></i> Generate Codes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Register{% endblock %}
+{% block body %}
+<div class="auth-layout">
+  <div class="auth-left">
+    <div style="max-width:380px;position:relative;z-index:1;text-align:center;">
+      <div style="width:64px;height:64px;background:var(--teal-glow);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;color:var(--teal);margin:0 auto 1.5rem;"><i class="fa-solid fa-chart-line"></i></div>
+      <h1 style="font-size:1.85rem;margin-bottom:.9rem;">Start Your Journey<br><span style="color:var(--gold);">Today.</span></h1>
+      <p style="color:var(--muted);font-size:.89rem;line-height:1.75;margin-bottom:2rem;">Create your free account in under 2 minutes.</p>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:2rem;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);"><div style="width:22px;height:22px;background:var(--green-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:.77rem;flex-shrink:0;"><i class="fa-solid fa-check"></i></div>No hidden fees or charges</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);"><div style="width:22px;height:22px;background:var(--green-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:.77rem;flex-shrink:0;"><i class="fa-solid fa-check"></i></div>Verified and licensed platform</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);"><div style="width:22px;height:22px;background:var(--green-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:.77rem;flex-shrink:0;"><i class="fa-solid fa-check"></i></div>Earn referral bonuses</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);"><div style="width:22px;height:22px;background:var(--green-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:.77rem;flex-shrink:0;"><i class="fa-solid fa-check"></i></div>24/7 customer support</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);"><div style="width:22px;height:22px;background:var(--green-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:.77rem;flex-shrink:0;"><i class="fa-solid fa-check"></i></div>SSL encrypted bank-grade security</div>
+      </div>
+      <div style="background:rgba(201,168,76,.08);border:1px solid var(--border);border-radius:13px;padding:1.1rem;">
+        <div style="font-size:.77rem;color:var(--faint);margin-bottom:7px;"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i> Trusted worldwide</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.6;font-style:italic;">"InvestPro has been my go-to platform for 2 years. Consistent earnings every single day."</p>
+        <div style="display:flex;align-items:center;gap:9px;margin-top:11px;">
+          <div class="avatar-ph" style="width:34px;height:34px;font-size:.8rem;">JM</div>
+          <div><div style="font-size:.83rem;font-weight:600;">James Mitchell</div><div style="font-size:.72rem;color:var(--faint);">Investor since 2022</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-logo"><div class="auth-logo-icon"><i class="fa-solid fa-chart-line"></i></div><span class="auth-logo-text">Invest<span style="color:var(--gold);">Pro</span></span></div>
+      <h2 style="font-size:1.6rem;margin-bottom:6px;">Create your account</h2>
+      <p style="color:var(--faint);font-size:.87rem;margin-bottom:1.5rem;">Join 24,000+ investors earning daily</p>
+      {% if form.errors %}<div class="alert alert-danger">⚠ Please fix the errors below.</div>{% endif %}
+      <form method="post" id="reg-form">{% csrf_token %}
+        <input type="hidden" name="referral_code" value="{{ request.GET.ref }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" placeholder="John" value="{{ form.first_name.value|default:'' }}" required>{% if form.first_name.errors %}<p class="form-error">{{ form.first_name.errors.0 }}</p>{% endif %}</div>
+          <div class="form-group"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" placeholder="Doe" value="{{ form.last_name.value|default:'' }}" required>{% if form.last_name.errors %}<p class="form-error">{{ form.last_name.errors.0 }}</p>{% endif %}</div>
+        </div>
+        <div class="form-group"><label class="form-label">Email Address</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input type="email" name="email" class="form-control" placeholder="you@example.com" value="{{ form.email.value|default:'' }}" required></div>{% if form.email.errors %}<p class="form-error">{{ form.email.errors.0 }}</p>{% endif %}</div>
+        <div class="form-group"><label class="form-label">Country</label><select name="country" id="reg-country" class="form-control" onchange="onCountryChange('reg-country','reg-dial','reg-state')"><option value="">Select country</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">State / Province</label><select name="state" id="reg-state" class="form-control"><option value="">Select country first</option></select></div>
+          <div class="form-group"><label class="form-label">Phone Number</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="reg-dial" name="dial_code" class="form-control" placeholder="+--" readonly style="width:80px;text-align:center;background:var(--elevated);flex-shrink:0;">
+              <div class="input-wrap" style="flex:1;"><span class="input-icon"><i class="fa-solid fa-mobile-screen"></i></span><input type="tel" name="phone" class="form-control" placeholder="555 000 0000"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Password</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input type="password" name="password" id="pw1" class="form-control" placeholder="Min 8 characters" required><button type="button" onclick="togglePw('pw1',this)" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--faint);cursor:pointer;font-size:.9rem;"><i class="fa-solid fa-eye"></i></button></div><div style="height:4px;background:var(--border-s);border-radius:2px;margin-top:7px;overflow:hidden;"><div id="pw-bar" style="height:100%;width:0;border-radius:2px;transition:all .3s;"></div></div><p class="form-hint" id="pw-hint">Use letters, numbers and symbols</p>{% if form.password.errors %}<p class="form-error">{{ form.password.errors.0 }}</p>{% endif %}</div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input type="password" name="password2" id="pw2" class="form-control" placeholder="Repeat password" required><button type="button" onclick="togglePw('pw2',this)" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--faint);cursor:pointer;font-size:.9rem;"><i class="fa-solid fa-eye"></i></button></div>{% if form.password2.errors %}<p class="form-error">{{ form.password2.errors.0 }}</p>{% endif %}</div>
+        {% if referred_by_user %}
+        <div class="alert alert-success" style="margin-bottom:1rem;"><i class="fa-solid fa-circle-check"></i> Referred By: <strong>{{ referred_by_user.email }}</strong></div>
+        <div class="form-group"><label class="form-label">Referral Code</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-gift"></i></span><input type="text" name="referral_code_display" class="form-control" value="{{ request.GET.ref }}" readonly style="background:var(--navy-4);cursor:not-allowed;"></div></div>
+        {% else %}
+        <div class="form-group"><label class="form-label">Referral Code <span style="color:var(--faint);font-weight:400;">(optional)</span></label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-gift"></i></span><input type="text" name="referral_code_display" class="form-control" placeholder="Enter referral code (optional)" value="{{ request.GET.ref }}"></div></div>
+        {% endif %}
+        {% if settings.require_reg_code %}
+        <div class="form-group"><label class="form-label">Registration Code <span style="color:var(--red);">*</span></label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-ticket"></i></span><input type="text" name="reg_code" class="form-control" placeholder="Enter your registration code" required></div>{% if form.reg_code.errors %}<p class="form-error">{{ form.reg_code.errors.0 }}</p>{% endif %}<p class="form-hint">A registration code is required to create an account.</p></div>
+        {% endif %}
+        <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:1.35rem;">
+          <input type="checkbox" id="terms" required style="accent-color:var(--gold);width:15px;height:15px;margin-top:2px;cursor:pointer;flex-shrink:0;">
+          <label for="terms" style="font-size:.81rem;color:var(--muted);cursor:pointer;line-height:1.6;">I agree to the <a href="#" style="color:var(--gold);">Terms of Service</a> and <a href="#" style="color:var(--gold);">Privacy Policy</a>.</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Create Free Account <i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+      {% if settings.allow_google_login or settings.allow_apple_login or settings.allow_metamask_login %}
+      <div class="divider"><span class="divider-text">or sign up with</span></div>
+      <div style="display:flex;gap:9px;">
+        {% if settings.allow_google_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-google"></i> Google</a>{% endif %}
+        {% if settings.allow_apple_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-apple"></i> Apple</a>{% endif %}
+        {% if settings.allow_metamask_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-ethereum"></i> MetaMask</a>{% endif %}
+      </div>
+      {% endif %}
+      <p class="auth-footer" style="margin-top:1.15rem;">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/countries.js' %}"></script>
+<script>
+function togglePw(id,b){const i=document.getElementById(id);i.type=i.type==='text'?'password':'text';b.innerHTML=i.type==='text'?'<i class="fa-solid fa-eye-slash"></i>':'<i class="fa-solid fa-eye"></i>';}
+const pw1=document.getElementById('pw1'),bar=document.getElementById('pw-bar'),hint=document.getElementById('pw-hint');
+pw1.addEventListener('input',()=>{
+  const p=pw1.value;let s=0;
+  if(p.length>=8)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;
+  const cols=['','var(--red)','var(--amber)','var(--amber)','var(--green)'];
+  const txts=['','Weak','Fair','Good','Strong'];
+  bar.style.width=(s*25)+'%';bar.style.background=cols[s]||cols[1];
+  hint.textContent=s>0?'Strength: '+txts[s]:'Use letters, numbers and symbols';
+  hint.style.color=cols[s]||'var(--faint)';
+});
+document.addEventListener('DOMContentLoaded',()=>{
+  populateCountrySelect('reg-country');
+});
+</script>{% endblock %}

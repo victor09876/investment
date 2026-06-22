@@ -1,0 +1,9 @@
+/* Font Awesome 6 Free via CDN — loaded in base.html */
+/* This file adds icon utility classes */
+.icon-xs { font-size: .75rem; }
+.icon-sm { font-size: .9rem; }
+.icon-md { font-size: 1.1rem; }
+.icon-lg { font-size: 1.4rem; }
+.icon-xl { font-size: 1.8rem; }
+.icon-2x { font-size: 2rem; }
+.icon-fw  { text-align:center; width:1.25em; display:inline-block; }

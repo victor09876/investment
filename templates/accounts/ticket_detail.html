@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+{% block page_title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+{% block content %}
+<div style="max-width:760px;">
+  <div style="margin-bottom:1.25rem;"><a href="{% url 'tickets' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Tickets</a></div>
+  <div class="card" style="margin-bottom:1.4rem;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div><h2 style="font-family:var(--ff-d);font-size:1.15rem;font-weight:700;margin-bottom:6px;">{{ ticket.subject }}</h2><div style="font-size:.82rem;color:var(--faint);">Ticket <span style="font-family:monospace;color:var(--gold);">#{{ ticket.ticket_id }}</span> &nbsp;·&nbsp; Opened {{ ticket.created_at|date:"M d, Y H:i" }}</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span class="badge {% if ticket.priority == 'urgent' %}badge-danger{% elif ticket.priority == 'high' %}badge-warning{% elif ticket.priority == 'medium' %}badge-info{% else %}badge-gold{% endif %}"><i class="fa-solid fa-flag"></i> {{ ticket.get_priority_display }}</span>
+        <span class="badge {% if ticket.status == 'open' %}badge-success{% elif ticket.status == 'pending' %}badge-warning{% elif ticket.status == 'resolved' %}badge-info{% else %}badge-danger{% endif %}"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i> {{ ticket.get_status_display }}</span>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:.9rem;margin-bottom:1.5rem;">
+  {% for msg in msgs %}
+  <div class="ticket-msg {% if msg.is_admin %}admin{% else %}user{% endif %}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div class="avatar-ph" style="width:28px;height:28px;font-size:.7rem;">{{ msg.sender.initials }}</div>
+        <div><span style="font-weight:600;font-size:.86rem;">{% if msg.is_admin %}Support Team{% else %}{{ msg.sender.full_name }}{% endif %}</span> {% if msg.is_admin %}<span class="badge badge-gold" style="font-size:.66rem;">Admin</span>{% endif %}</div>
+      </div>
+      <span style="font-size:.75rem;color:var(--faint);">{{ msg.created_at|date:"M d, Y H:i" }}</span>
+    </div>
+    <p style="font-size:.87rem;line-height:1.7;color:var(--muted);white-space:pre-wrap;">{{ msg.message }}</p>
+    {% if msg.attachment %}<div style="margin-top:.75rem;"><a href="{{ msg.attachment.url }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-paperclip"></i> View Attachment</a></div>{% endif %}
+  </div>
+  {% endfor %}
+  </div>
+  {% if ticket.status != 'closed' %}
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-reply" style="color:var(--gold);margin-right:8px;"></i>Reply</div>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="action" value="reply">
+      <div class="form-group"><textarea name="message" class="form-control" rows="4" placeholder="Type your message..." required></textarea></div>
+      <div class="form-group"><label class="form-label">Attachment <span style="color:var(--faint);font-weight:400;">(optional, max 40MB)</span></label><input type="file" name="attachment" class="form-control"></div>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Reply</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="alert alert-warning"><i class="fa-solid fa-ban"></i> This ticket has been closed. <a href="{% url 'tickets' %}" style="color:var(--amber);font-weight:600;">Open a new ticket</a> if you need further assistance.</div>
+  {% endif %}
+</div>
+{% endblock %}

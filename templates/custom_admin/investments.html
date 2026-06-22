@@ -1,0 +1,51 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Investments{% endblock %}
+{% block page_title %}Manage Investments{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Investments</h1></div></div>
+<div class="grid-3" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-rotate"></i></div><div class="s-label">Active</div><div class="s-value">{{ stats.active_count }}</div><div class="s-change flat">${{ stats.active_total|floatformat:2 }} invested</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-circle-check"></i></div><div class="s-label">Completed Profit</div><div class="s-value" style="color:var(--green);">${{ stats.completed_profit|floatformat:2 }}</div><div class="s-change up">Paid out</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-chart-pie"></i></div><div class="s-label">Total Investments</div><div class="s-value">{{ investments.count }}</div><div class="s-change flat">All time</div></div>
+</div>
+<!-- FILTERS -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:160px;"><label class="form-label">Search</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" name="q" class="form-control" placeholder="User email, plan..." value="{{ q }}"></div></div>
+    <div style="min-width:130px;"><label class="form-label">Status</label><select name="status" class="form-control"><option value="">All</option><option value="active" {% if status == 'active' %}selected{% endif %}>Active</option><option value="completed" {% if status == 'completed' %}selected{% endif %}>Completed</option><option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>Cancelled</option></select></div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{% url 'admin_investments' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-xmark"></i></a>
+  </form>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Daily</th><th>Earned</th><th>Progress</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for inv in investments %}
+      <tr>
+        <td><a href="{% url 'admin_user_detail' inv.user.id %}" style="color:var(--gold);font-size:.83rem;">{{ inv.user.email }}</a></td>
+        <td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</td>
+        <td style="color:var(--gold);font-weight:600;">${{ inv.amount|floatformat:2 }}</td>
+        <td style="color:var(--green);">${{ inv.daily_profit|floatformat:2 }}</td>
+        <td style="color:var(--green);">${{ inv.profit_earned|floatformat:2 }}</td>
+        <td>
+          {% if inv.status == 'active' %}
+          <div style="min-width:80px;">
+            <div style="font-size:.73rem;color:var(--faint);margin-bottom:3px;">{{ inv.progress_pct }}%</div>
+            <div class="progress"><div class="progress-bar" data-progress="{{ inv.progress_pct }}" style="width:0;"></div></div>
+          </div>
+          {% else %}—{% endif %}
+        </td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ inv.start_date|date:"M d, Y" }}</td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ inv.end_date|date:"M d, Y" }}</td>
+        <td><span class="badge {% if inv.status == 'active' %}badge-success{% elif inv.status == 'completed' %}badge-info{% else %}badge-danger{% endif %}">{{ inv.get_status_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:var(--faint);padding:2.5rem;">No investments found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

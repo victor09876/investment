@@ -1,0 +1,108 @@
+{% extends 'layout.html' %}{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+{% if stats.total_deposited == 0 %}
+<div class="alert alert-warning" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+  <div><i class="fa-solid fa-circle-exclamation fa-lg" style="margin-right:8px;"></i><strong>Welcome!</strong> You haven't made your first deposit yet. Fund your wallet to start investing and earning daily returns.</div>
+  <a href="{% url 'deposit' %}" class="btn btn-warning btn-sm"><i class="fa-solid fa-credit-card"></i> Make First Deposit</a>
+</div>
+{% endif %}
+{% if not request.user.is_kyc_verified %}
+<div class="alert {% if request.user.kyc_status == 'rejected' %}alert-danger{% elif request.user.kyc_status in 'submitted,pending' %}alert-warning{% else %}alert-info{% endif %}" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+  <div><i class="fa-solid fa-id-card fa-lg" style="margin-right:8px;"></i><strong>KYC Status:</strong> <span class="badge {% if request.user.kyc_status == 'rejected' %}badge-danger{% elif request.user.kyc_status in 'submitted,pending' %}badge-warning{% else %}badge-info{% endif %}">{{ request.user.get_kyc_status_display }}</span>
+  {% if request.user.kyc_status == 'not_submitted' %} &mdash; Complete verification to unlock higher limits.{% elif request.user.kyc_status in 'submitted,pending' %} &mdash; Your documents are under review.{% elif request.user.kyc_status == 'rejected' %} &mdash; Please review the note and resubmit.{% endif %}</div>
+  {% if request.user.kyc_status != 'submitted' and request.user.kyc_status != 'pending' %}<a href="{% url 'kyc' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-right"></i> {% if request.user.kyc_status == 'rejected' %}Resubmit KYC{% else %}Complete KYC{% endif %}</a>{% endif %}
+</div>
+{% endif %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;">
+  <div><h1 class="page-title">Good day, {{ request.user.first_name }} 👋</h1><p class="page-subtitle">Here's your portfolio overview</p></div>
+  <a href="{% url 'plans' %}" class="btn btn-primary">+ New Investment</a>
+</div>
+<!-- STATS -->
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-sack-dollar"></i></div><div class="s-label">Total Balance</div><div class="s-value" data-count="{{ stats.total_balance }}" data-prefix="$" data-dec="2">$0</div><div class="s-change up">Wallet + Profit</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-chart-line"></i></div><div class="s-label">Total Profit</div><div class="s-value" style="color:var(--green);" data-count="{{ stats.total_profit }}" data-prefix="$" data-dec="2">$0</div><div class="s-change up">All time earnings</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-rotate"></i></div><div class="s-label">Active Investments</div><div class="s-value" data-count="{{ stats.active_count }}" data-dec="0">0</div><div class="s-change flat">Currently running</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-users"></i></div><div class="s-label">Referral Earnings</div><div class="s-value" data-count="{{ stats.referral_earn }}" data-prefix="$" data-dec="2">$0</div><div class="s-change up">From referrals</div></div>
+</div>
+<!-- CHART + QUICK ACTIONS -->
+<div class="grid-2" style="margin-bottom:1.75rem;">
+  <div class="card">
+    <div class="card-header"><div><div class="card-title">Earnings Overview</div><div class="card-subtitle">Monthly ROI performance</div></div></div>
+    <div id="earn-chart" style="height:240px;margin-bottom:1rem;"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:1rem;border-top:1px solid var(--border-s);">
+      <div style="text-align:center;"><div style="font-size:.73rem;color:var(--faint);">Total Earned</div><div style="font-family:var(--ff-d);font-weight:700;color:var(--gold);">${{ stats.total_profit|floatformat:2 }}</div></div>
+      <div style="text-align:center;"><div style="font-size:.73rem;color:var(--faint);">Deposited</div><div style="font-family:var(--ff-d);font-weight:700;">${{ stats.total_deposited|floatformat:2 }}</div></div>
+      <div style="text-align:center;"><div style="font-size:.73rem;color:var(--faint);">Withdrawn</div><div style="font-family:var(--ff-d);font-weight:700;">${{ stats.total_withdrawn|floatformat:2 }}</div></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1.15rem;">
+    <div class="card"><div class="card-title" style="margin-bottom:1rem;">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;">
+        <a href="{% url 'deposit' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-credit-card"></i></span><span style="font-size:.79rem;">Deposit</span></a>
+        <a href="{% url 'withdrawal' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-money-bill-wave"></i></span><span style="font-size:.79rem;">Withdraw</span></a>
+        <a href="{% url 'plans' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-gem"></i></span><span style="font-size:.79rem;">Invest</span></a>
+        <a href="{% url 'transactions' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-receipt"></i></span><span style="font-size:.79rem;">History</span></a>
+        {% if site_settings.allow_transfer %}<a href="{% url 'transfer' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-right-left"></i></span><span style="font-size:.79rem;">Transfer</span></a>{% endif %}
+        <a href="{% url 'tickets' %}" class="btn btn-outline" style="flex-direction:column;gap:5px;padding:.9rem;height:auto;text-align:center;"><span style="font-size:1.3rem;"><i class="fa-solid fa-headset"></i></span><span style="font-size:.79rem;">Support</span></a>
+      </div>
+    </div>
+    <div class="card card-gold">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div class="card-title">Balances</div></div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-sack-dollar"></i> Wallet Balance</span><span style="font-weight:600;">${{ request.user.wallet_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.wallet_balance stats.total_balance|default:1 100 %}" style="width:0;"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-chart-line"></i> Profit Balance</span><span style="font-weight:600;color:var(--green);">${{ request.user.profit_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.profit_balance stats.total_balance|default:1 100 %}" style="width:0;background:linear-gradient(90deg,var(--green),#5EE8A8);"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ACTIVE INVESTMENTS -->
+<div class="card" style="margin-bottom:1.75rem;">
+  <div class="card-header"><div><div class="card-title">Active Investments</div><div class="card-subtitle">Currently running plans</div></div><a href="{% url 'my_investments' %}" class="btn btn-ghost btn-sm">View All →</a></div>
+  {% if active_investments %}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    {% for inv in active_investments %}
+    <div class="invest-card">
+      <div class="invest-card-top">
+        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</div><div class="invest-detail">Started {{ inv.start_date|date:"M d, Y" }} · {{ inv.plan.duration_days }} days</div></div>
+        <div style="text-align:right;"><div class="invest-amount">${{ inv.amount|floatformat:2 }}</div><span class="badge badge-success" style="margin-top:4px;">Active</span></div>
+      </div>
+      <div style="margin:1rem 0 .5rem;"><div style="display:flex;justify-content:space-between;font-size:.77rem;color:var(--faint);margin-bottom:6px;"><span>{{ inv.progress_pct }}% complete</span><span>{{ inv.days_remaining }} days left</span></div><div class="progress"><div class="progress-bar" data-progress="{{ inv.progress_pct }}" style="width:0;"></div></div></div>
+      <div class="invest-meta">
+        <div class="invest-meta-item"><div class="invest-meta-label">Daily ROI</div><div class="invest-meta-value" style="color:var(--green);">{{ inv.plan.daily_roi }}%</div></div>
+        <div class="invest-meta-item"><div class="invest-meta-label">Daily Profit</div><div class="invest-meta-value" style="color:var(--green);">${{ inv.daily_profit|floatformat:2 }}</div></div>
+        <div class="invest-meta-item"><div class="invest-meta-label">Earned</div><div class="invest-meta-value" style="color:var(--gold);">${{ inv.profit_earned|floatformat:2 }}</div></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-chart-pie"></i></div><div class="empty-state-title">No active investments</div><div class="empty-state-text">Start growing your money with one of our plans.</div><a href="{% url 'plans' %}" class="btn btn-primary btn-sm">Browse Plans</a></div>
+  {% endif %}
+</div>
+<!-- RECENT TRANSACTIONS -->
+<div class="card">
+  <div class="card-header"><div><div class="card-title">Recent Transactions</div><div class="card-subtitle">Latest financial activity</div></div><a href="{% url 'transactions' %}" class="btn btn-ghost btn-sm">View All →</a></div>
+  {% if recent_txns %}
+  <div class="table-wrap"><table><thead><tr><th>Transaction</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+  {% for t in recent_txns %}
+  <tr>
+    <td><div style="font-weight:600;">{{ t.description }}</div><div style="font-size:.73rem;color:var(--faint);">#{{ t.txn_id }}</div></td>
+    <td>{{ t.created_at|date:"M d, Y" }}</td>
+    <td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">{% if t.is_credit %}+{% else %}-{% endif %}${{ t.amount|floatformat:2 }}</td>
+    <td><span class="badge {{ t.status_class }}">{{ t.get_status_display }}</span></td>
+  </tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state" style="padding:2rem;"><div style="color:var(--faint);font-size:.87rem;">No transactions yet.</div></div>{% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const monthly = {{ monthly|safe }};
+  drawBarChart('earn-chart', monthly.map(m=>({value:m.amount,label:m.month})));
+});
+</script>
+{% endblock %}

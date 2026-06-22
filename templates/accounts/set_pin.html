@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block title %}Withdrawal PIN{% endblock %}
+{% block page_title %}Withdrawal PIN{% endblock %}
+{% block content %}
+<div style="max-width:440px;">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:1.5rem;"><div style="font-size:2.5rem;margin-bottom:.75rem;"><i class="fa-solid fa-key"></i></div><div class="card-title">{% if request.user.withdrawal_pin %}Change{% else %}Set{% endif %} Withdrawal PIN</div><p style="font-size:.84rem;color:var(--muted);margin-top:.5rem;line-height:1.6;">A 4-digit PIN is required for all withdrawal requests to keep your funds safe.</p></div>
+    <form method="post">{% csrf_token %}
+      {% if form.errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}{% for f in form %}{% for e in f.errors %}{{ f.label }}: {{ e }}{% endfor %}{% endfor %}</div>{% endif %}
+      {% if request.user.withdrawal_pin %}<div class="form-group"><label class="form-label">Current PIN</label><input type="password" name="current_pin" class="form-control" placeholder="••••" maxlength="4" style="letter-spacing:.3em;text-align:center;font-size:1.2rem;"></div>{% endif %}
+      <div class="form-group"><label class="form-label">New PIN</label><input type="password" name="new_pin" class="form-control" placeholder="••••" maxlength="4" style="letter-spacing:.3em;text-align:center;font-size:1.2rem;" required></div>
+      <div class="form-group"><label class="form-label">Confirm PIN</label><input type="password" name="confirm_pin" class="form-control" placeholder="••••" maxlength="4" style="letter-spacing:.3em;text-align:center;font-size:1.2rem;" required></div>
+      <button type="submit" class="btn btn-primary btn-block">Save PIN</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
