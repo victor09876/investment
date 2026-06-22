@@ -1,0 +1,43 @@
+{% extends 'front/base.html' %}
+{% block title %}Blog{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:4rem 2rem 2rem;">
+  <div style="max-width:700px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+    <h1 style="font-family:var(--ff-d);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;">Blog & Insights</h1>
+    <p style="color:var(--muted);font-size:1rem;line-height:1.8;">Market insights, investment tips, and platform news.</p>
+  </div>
+</section>
+<section class="front-section" style="padding-top:0;">
+  <div style="max-width:1100px;margin:0 auto;">
+    {% if categories %}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2rem;">
+      <a href="{% url 'front_blog' %}" class="btn {% if not active_category %}btn-primary{% else %}btn-outline{% endif %} btn-sm">All</a>
+      {% for cat in categories %}
+      <a href="?category={{ cat }}" class="btn {% if active_category == cat %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ cat }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if posts %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
+      {% for post in posts %}
+      <a href="{% url 'front_blog_detail' post.slug %}" class="card" style="padding:0;overflow:hidden;text-decoration:none;transition:border-color .2s;" onmouseenter="this.style.borderColor='var(--border)'" onmouseleave="this.style.borderColor='rgba(255,255,255,.06)'">
+        {% if post.cover_image %}<img src="{{ post.cover_image.url }}" alt="{{ post.title }}" style="width:100%;height:200px;object-fit:cover;">
+        {% else %}<div style="width:100%;height:200px;background:var(--elevated);display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:2.5rem;"><i class="fa-solid fa-newspaper"></i></div>{% endif %}
+        <div style="padding:1.5rem;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap;">
+            {% if post.category %}<span class="badge badge-gold">{{ post.category }}</span>{% endif %}
+            <span style="font-size:.74rem;color:var(--faint);font-family:var(--ff-m);">{{ post.created_at|date:"M d, Y" }}</span>
+          </div>
+          <h2 style="font-family:var(--ff-d);font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;line-height:1.4;">{{ post.title|truncatechars:65 }}</h2>
+          <p style="color:var(--muted);font-size:.84rem;line-height:1.65;margin-bottom:1rem;">{{ post.excerpt|truncatechars:100 }}</p>
+          <div style="font-size:.79rem;color:var(--faint);display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-user"></i>{{ post.author_name }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-newspaper fa-3x empty-state-icon"></i><div class="empty-state-title">No posts yet</div><div class="empty-state-text">Check back soon for market insights and platform news.</div></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

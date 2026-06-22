@@ -20,8 +20,12 @@
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;">
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Phone</span><span>{{ u.phone|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Phone</span><span>{% if u.dial_code %}{{ u.dial_code }} {% endif %}{{ u.phone|default:"—" }}</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Country</span><span>{{ u.country|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">State / Province</span><span>{{ u.state|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Address</span><span style="text-align:right;max-width:180px;">{{ u.address|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Date of Birth</span><span>{{ u.date_of_birth|date:"M d, Y"|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Gender</span><span>{{ u.gender|default:"—" }}</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Joined</span><span>{{ u.date_joined|date:"M d, Y" }}</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Referral Code</span><span style="color:var(--gold);">{{ u.referral_code }}</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Referred By</span><span>{{ u.referred_by.email|default:"—" }}</span></div>

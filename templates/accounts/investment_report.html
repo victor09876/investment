@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block title %}Investment Report{% endblock %}
+{% block page_title %}Investment Report{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Investment Report</h1><p class="page-subtitle">A complete overview of your investment performance</p></div></div>
+
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(94,234,212,.12);color:var(--gold);"><i class="fa-solid fa-sack-dollar"></i></div><div class="s-label">Total Invested</div><div class="s-value">${{ total_invested|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="s-label">Total Profit Earned</div><div class="s-value" style="color:var(--green);">${{ total_profit|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-percent"></i></div><div class="s-label">Overall ROI</div><div class="s-value">{{ roi_pct|floatformat:1 }}%</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-layer-group"></i></div><div class="s-label">Investments</div><div class="s-value">{{ investments.count }}</div><div class="s-change flat">{{ active_count }} active &middot; {{ completed_count }} completed</div></div>
+</div>
+
+<div class="grid-2" style="margin-bottom:1.5rem;align-items:start;">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-chart-column" style="color:var(--gold);margin-right:8px;"></i>Monthly Profit (Last 6 Months)</div></div>
+    <div id="report-chart" style="height:240px;"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-gem" style="color:var(--gold);margin-right:8px;"></i>Breakdown by Plan</div></div>
+    {% if plan_breakdown %}
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      {% for pb in plan_breakdown %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem .9rem;background:var(--navy-3);border-radius:var(--radius);">
+        <div><div style="font-weight:600;font-size:.87rem;">{{ pb.plan__name }}</div><div style="font-size:.74rem;color:var(--faint);">{{ pb.count }} investment{{ pb.count|pluralize }}</div></div>
+        <div style="text-align:right;"><div style="font-weight:600;">${{ pb.total|floatformat:2 }}</div><div style="font-size:.74rem;color:var(--green);">+${{ pb.profit|floatformat:2 }}</div></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-state"><i class="fa-solid fa-chart-pie fa-2x empty-state-icon"></i><div class="empty-state-title">No investments yet</div><div class="empty-state-text">Start investing to see your performance breakdown here.</div></div>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-list" style="color:var(--gold);margin-right:8px;"></i>All Investments</div></div>
+  {% if investments %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Plan</th><th>Amount</th><th>Daily ROI</th><th>Profit Earned</th><th>Status</th><th>Started</th><th>Ends</th></tr></thead>
+      <tbody>
+      {% for inv in investments %}
+      <tr>
+        <td><i class="fa-solid fa-{{ inv.plan.fa_icon }}" style="color:var(--gold);margin-right:6px;"></i>{{ inv.plan.name }}</td>
+        <td style="font-weight:600;">${{ inv.amount|floatformat:2 }}</td>
+        <td>{{ inv.plan.daily_roi }}%</td>
+        <td style="color:var(--green);font-weight:600;">${{ inv.profit_earned|floatformat:2 }}</td>
+        <td><span class="badge {% if inv.status == 'active' %}badge-success{% elif inv.status == 'completed' %}badge-info{% else %}badge-danger{% endif %}">{{ inv.get_status_display }}</span></td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ inv.start_date|date:"M d, Y" }}</td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ inv.end_date|date:"M d, Y" }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty-state"><i class="fa-solid fa-inbox fa-2x empty-state-icon"></i><div class="empty-state-title">No investments yet</div><div class="empty-state-text">Browse our plans to start your investment journey.</div><a href="{% url 'plans' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gem"></i> View Plans</a></div>{% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const monthly = {{ monthly|safe }};
+  drawBarChart('report-chart', monthly.map(m=>({value:m.amount,label:m.month})));
+});
+</script>
+{% endblock %}

@@ -23,4 +23,11 @@ urlpatterns = [
     path('cron/',              v.admin_cron,              name='admin_cron'),
     path('login-analytics/',   v.admin_login_analytics,   name='admin_login_analytics'),
     path('credit-roi/',        v.admin_credit_roi,        name='admin_credit_roi'),
+    path('pages/',             v.admin_pages,             name='admin_pages'),
+    path('pages/<int:pk>/',    v.admin_page_edit,         name='admin_page_edit'),
+    path('blog/',              v.admin_blog,              name='admin_blog'),
+    path('blog/<int:pk>/',     v.admin_blog_edit,         name='admin_blog_edit'),
+    path('blog/new/',          v.admin_blog_new,          name='admin_blog_new'),
+    path('blog/<int:pk>/delete/', v.admin_blog_delete,    name='admin_blog_delete'),
+    path('sidebar/',           v.admin_sidebar,           name='admin_sidebar'),
 ]

@@ -48,6 +48,8 @@ def register_view(request):
                 last_name=form.cleaned_data['last_name'],
                 phone=form.cleaned_data.get('phone',''),
                 country=form.cleaned_data.get('country',''),
+                state=form.cleaned_data.get('state',''),
+                dial_code=form.cleaned_data.get('dial_code',''),
                 referred_by=referred_by,
             )
             if settings.welcome_bonus > 0:
@@ -80,11 +82,46 @@ def logout_view(request):
 def forgot_password_view(request):
     sent = False
     if request.method == 'POST':
-        email = request.POST.get('email','').strip()
-        User.objects.filter(email=email).exists()
+        email = request.POST.get('email','').strip().lower()
+        user = User.objects.filter(email=email).first()
+        if user:
+            from .models import PasswordResetToken
+            from .email_utils import send_email
+            reset_token = PasswordResetToken.generate(user)
+            reset_url = request.build_absolute_uri(f'/reset-password/{reset_token.token}/')
+            send_email(user.email, 'Reset your password', 'password_reset',
+                       {'user': user, 'reset_url': reset_url})
         sent = True
-        messages.success(request, 'If that email exists, a reset link has been sent.')
+        messages.success(request, 'If that email exists, a password reset link has been sent.')
     return render(request, 'accounts/forgot_password.html', {'sent': sent})
+
+
+def reset_password_view(request, token):
+    from .models import PasswordResetToken
+    reset_token = PasswordResetToken.objects.filter(token=token).first()
+    if not reset_token or not reset_token.is_valid():
+        messages.error(request, 'This password reset link is invalid or has expired. Please request a new one.')
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        pw1 = request.POST.get('password','')
+        pw2 = request.POST.get('password2','')
+        if len(pw1) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+        elif pw1 != pw2:
+            messages.error(request, 'Passwords do not match.')
+        else:
+            user = reset_token.user
+            user.set_password(pw1)
+            user.save(update_fields=['password'])
+            reset_token.used = True
+            reset_token.save(update_fields=['used'])
+            Notification.objects.create(user=user, type='security',
+                title='Password Changed', body='Your password was reset successfully.')
+            messages.success(request, 'Your password has been reset. You can now log in.')
+            return redirect('login')
+
+    return render(request, 'accounts/reset_password.html', {'token': token})
 
 
 @login_required
@@ -474,8 +511,8 @@ def ticket_detail_view(request, pk):
             ticket.status = 'pending'; ticket.save(update_fields=['status'])
             messages.success(request, 'Reply sent.')
             return redirect('ticket_detail', pk=ticket.id)
-    messages = ticket.messages.all()
-    return render(request, 'accounts/ticket_detail.html', {'ticket': ticket, 'msgs': messages})
+    ticket_messages = ticket.messages.all()
+    return render(request, 'accounts/ticket_detail.html', {'ticket': ticket, 'msgs': ticket_messages})
 
 
 # ─────────────────────────────────────────────
@@ -530,4 +567,49 @@ def statement_view(request):
     return render(request, 'accounts/statement.html', {
         'transactions': qs, 'summary': summary,
         'period': period, 'date_from': date_from_str, 'date_to': date_to_str,
+    })
+
+
+# ─────────────────────────────────────────────
+# INVESTMENT REPORT
+# ─────────────────────────────────────────────
+@login_required
+def investment_report_view(request):
+    from investments.models import Investment
+    from transactions.models import Transaction
+    from django.utils import timezone as tz
+    from datetime import timedelta
+
+    user = request.user
+    investments = Investment.objects.filter(user=user).select_related('plan').order_by('-created_at')
+
+    total_invested  = sum((i.amount for i in investments), Decimal('0'))
+    total_profit    = sum((i.profit_earned for i in investments), Decimal('0'))
+    active_count    = investments.filter(status='active').count()
+    completed_count = investments.filter(status='completed').count()
+    cancelled_count = investments.filter(status='cancelled').count()
+
+    # Monthly profit breakdown (last 6 months) from ROI transactions
+    monthly = []
+    for i in range(5, -1, -1):
+        d = tz.now() - timedelta(days=30 * i)
+        amt = Transaction.objects.filter(user=user, type='roi', status='completed',
+            created_at__year=d.year, created_at__month=d.month).aggregate(t=Sum('amount'))['t'] or 0
+        monthly.append({'month': d.strftime('%b'), 'amount': float(amt)})
+
+    # Per-plan breakdown
+    plan_breakdown = investments.values('plan__name').annotate(
+        total=Sum('amount'), profit=Sum('profit_earned'), count=Count('id')
+    ).order_by('-total')
+
+    return render(request, 'accounts/investment_report.html', {
+        'investments': investments,
+        'total_invested': total_invested,
+        'total_profit': total_profit,
+        'active_count': active_count,
+        'completed_count': completed_count,
+        'cancelled_count': cancelled_count,
+        'monthly': monthly,
+        'plan_breakdown': plan_breakdown,
+        'roi_pct': (total_profit / total_invested * 100) if total_invested else 0,
     })

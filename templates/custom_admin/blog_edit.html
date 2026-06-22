@@ -1,0 +1,30 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}{% if post %}Edit Post{% else %}New Post{% endif %}{% endblock %}
+{% block page_title %}{% if post %}Edit Blog Post{% else %}New Blog Post{% endif %}{% endblock %}
+{% block content %}
+<div style="max-width:800px;">
+  <div style="margin-bottom:1.25rem;"><a href="{% url 'admin_blog' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a></div>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="form-group"><label class="form-label">Title</label><input type="text" name="title" class="form-control" value="{{ post.title|default:'' }}" required></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Category</label><input type="text" name="category" class="form-control" value="{{ post.category|default:'' }}" placeholder="e.g. Market Insights"></div>
+        <div class="form-group"><label class="form-label">Author Name</label><input type="text" name="author_name" class="form-control" value="{{ post.author_name|default:'InvestPro Team' }}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Excerpt</label><textarea name="excerpt" class="form-control" rows="2" placeholder="Short summary shown on the blog list">{{ post.excerpt|default:'' }}</textarea></div>
+      <div class="form-group">
+        <label class="form-label">Cover Image</label>
+        {% if post.cover_image %}<div style="margin-bottom:.5rem;"><img src="{{ post.cover_image.url }}" style="max-height:120px;border-radius:var(--radius);"></div>{% endif %}
+        <input type="file" name="cover_image" class="form-control" accept="image/*">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;"><label class="toggle"><input type="checkbox" name="is_published" {% if post.is_published or not post %}checked{% endif %}><span class="toggle-slider"></span></label><span style="font-size:.85rem;">Published</span></div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-pen-to-square" style="color:var(--gold);margin-right:8px;"></i>Content</div>
+      <p class="form-hint" style="margin-bottom:.75rem;">HTML is supported. Line breaks start new paragraphs.</p>
+      <textarea name="content" class="form-control" rows="16" style="font-family:var(--ff-m);font-size:.83rem;">{{ post.content|default:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-floppy-disk"></i> Save Post</button>
+  </form>
+</div>
+{% endblock %}

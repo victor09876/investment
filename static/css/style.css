@@ -372,3 +372,47 @@ input[type="file"].form-control::file-selector-button{
   margin-right:12px;cursor:pointer;transition:all .15s;font-family:var(--ff-b);
 }
 input[type="file"].form-control::file-selector-button:hover{background:var(--teal);color:#04201C;}
+
+/* ── FAQ ACCORDION ── */
+.faq-item{border:1px solid var(--border-s);border-radius:var(--radius);margin-bottom:.6rem;overflow:hidden;}
+.faq-toggle{width:100%;background:var(--surface);border:none;color:var(--text);padding:1.1rem 1.25rem;text-align:left;font-size:.9rem;font-weight:600;font-family:var(--ff-d);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:background .15s;}
+.faq-toggle:hover{background:var(--elevated);}
+.faq-toggle.open{color:var(--teal);}
+.faq-icon{flex-shrink:0;transition:transform .25s;}
+.faq-body{padding:0 1.25rem 1.1rem;display:none;}
+
+/* ── FRONT NAV MOBILE ── */
+@media(max-width:900px){
+  .front-nav .nav-links{display:none!important;}
+  .front-nav{flex-wrap:wrap;height:auto;padding:.75rem 1.25rem;}
+  #front-hamburger{display:flex!important;}
+}
+
+/* ── COUNTER ANIMATION ── */
+@keyframes countUp {from {opacity:0;transform:translateY(10px);} to {opacity:1;transform:translateY(0);}}
+.stat-counter {animation: countUp .6s ease both;}
+
+/* ── PUBLIC SITE HERO POLISH ── */
+.front-plan-card .plan-icon {background:var(--teal-glow);color:var(--teal);}
+
+/* ── BLOG CARD HOVER ── */
+a.card {display:block;}
+
+/* ── TOP INVESTORS MEDALS ── */
+.lb-row .lb-rank.gold {background:rgba(251,191,36,.15);color:var(--amber);}
+.lb-row .lb-rank.silver {background:rgba(139,150,168,.15);color:var(--muted);}
+.lb-row .lb-rank.bronze {background:rgba(180,100,60,.15);color:#D97757;}
+
+/* ── FRONT NAV ACTIVE LINKS ── */
+.front-nav .nav-links a.active-link {color:var(--teal);}
+
+/* ── CONTACT GRID RESPONSIVE ── */
+@media(max-width:760px){
+  .contact-grid {grid-template-columns:1fr!important;}
+}
+
+/* ── ADMIN QUICK STATS NUMBERS ── */
+.admin-stat-num {font-family:var(--ff-m);font-variant-numeric:tabular-nums;}
+
+/* ── SMOOTH SCROLL ── */
+html {scroll-behavior:smooth;}

@@ -15,33 +15,36 @@
     <nav class="sidebar-nav">
       <div class="nav-section-label">Menu</div>
       <a href="{% url 'dashboard' %}" class="nav-item {% if request.path == '/dashboard/' %}active{% endif %}"><i class="fa-solid fa-house nav-icon"></i>Dashboard</a>
-      <a href="{% url 'plans' %}" class="nav-item {% if '/investments/plans/' in request.path %}active{% endif %}"><i class="fa-solid fa-gem nav-icon"></i>Investment Plans</a>
-      <a href="{% url 'my_investments' %}" class="nav-item {% if '/investments/my/' in request.path %}active{% endif %}"><i class="fa-solid fa-chart-pie nav-icon"></i>My Investments</a>
-      <a href="{% url 'calculator' %}" class="nav-item {% if '/investments/calculator/' in request.path %}active{% endif %}"><i class="fa-solid fa-calculator nav-icon"></i>ROI Calculator</a>
+      {% if 'plans' not in sidebar_visible.hidden %}<a href="{% url 'plans' %}" class="nav-item {% if '/investments/plans/' in request.path %}active{% endif %}"><i class="fa-solid fa-gem nav-icon"></i>Investment Plans</a>{% endif %}
+      {% if 'my_investments' not in sidebar_visible.hidden %}<a href="{% url 'my_investments' %}" class="nav-item {% if '/investments/my/' in request.path %}active{% endif %}"><i class="fa-solid fa-chart-pie nav-icon"></i>My Investments</a>{% endif %}
+      {% if 'calculator' not in sidebar_visible.hidden %}<a href="{% url 'calculator' %}" class="nav-item {% if '/investments/calculator/' in request.path %}active{% endif %}"><i class="fa-solid fa-calculator nav-icon"></i>ROI Calculator</a>{% endif %}
 
       <div class="nav-section-label">Finance</div>
-      <a href="{% url 'deposit' %}" class="nav-item {% if '/transactions/deposit/' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card nav-icon"></i>Deposit</a>
-      <a href="{% url 'withdrawal' %}" class="nav-item {% if '/transactions/withdrawal/' in request.path %}active{% endif %}"><i class="fa-solid fa-money-bill-transfer nav-icon"></i>Withdrawal</a>
-      <a href="{% url 'transactions' %}" class="nav-item {% if '/transactions/history/' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt nav-icon"></i>Transactions</a>
-      {% if site_settings.allow_transfer %}
+      {% if 'deposit' not in sidebar_visible.hidden %}<a href="{% url 'deposit' %}" class="nav-item {% if '/transactions/deposit/' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card nav-icon"></i>Deposit</a>{% endif %}
+      {% if 'withdrawal' not in sidebar_visible.hidden %}<a href="{% url 'withdrawal' %}" class="nav-item {% if '/transactions/withdrawal/' in request.path %}active{% endif %}"><i class="fa-solid fa-money-bill-transfer nav-icon"></i>Withdrawal</a>{% endif %}
+      {% if 'transactions_history' not in sidebar_visible.hidden %}<a href="{% url 'transactions' %}" class="nav-item {% if '/transactions/history/' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt nav-icon"></i>Transactions</a>{% endif %}
+      {% if site_settings.allow_transfer and 'transfer' not in sidebar_visible.hidden %}
       <a href="{% url 'transfer' %}" class="nav-item {% if request.path == '/transfer/' %}active{% endif %}"><i class="fa-solid fa-right-left nav-icon"></i>Transfer</a>
       {% endif %}
-      <a href="{% url 'statement' %}" class="nav-item {% if request.path == '/statement/' %}active{% endif %}"><i class="fa-solid fa-file-invoice nav-icon"></i>Statement</a>
+      {% if 'statement' not in sidebar_visible.hidden %}<a href="{% url 'statement' %}" class="nav-item {% if request.path == '/statement/' %}active{% endif %}"><i class="fa-solid fa-file-invoice nav-icon"></i>Statement</a>{% endif %}
+      {% if 'investment_report' not in sidebar_visible.hidden %}<a href="{% url 'investment_report' %}" class="nav-item {% if request.path == '/investment-report/' %}active{% endif %}"><i class="fa-solid fa-chart-column nav-icon"></i>Investment Report</a>{% endif %}
 
       <div class="nav-section-label">Account</div>
-      <a href="{% url 'referrals' %}" class="nav-item {% if request.path == '/referrals/' %}active{% endif %}"><i class="fa-solid fa-users nav-icon"></i>Referrals</a>
-      {% if site_settings.allow_ranking %}
+      {% if 'referrals' not in sidebar_visible.hidden %}<a href="{% url 'referrals' %}" class="nav-item {% if request.path == '/referrals/' %}active{% endif %}"><i class="fa-solid fa-users nav-icon"></i>Referrals</a>{% endif %}
+      {% if site_settings.allow_ranking and 'ranking' not in sidebar_visible.hidden %}
       <a href="{% url 'ranking' %}" class="nav-item {% if request.path == '/ranking/' %}active{% endif %}"><i class="fa-solid fa-trophy nav-icon"></i>Ranking</a>
       {% endif %}
-      <a href="{% url 'kyc' %}" class="nav-item {% if request.path == '/kyc/' %}active{% endif %}"><i class="fa-solid fa-id-card nav-icon"></i>KYC Verification</a>
+      {% if 'kyc' not in sidebar_visible.hidden %}<a href="{% url 'kyc' %}" class="nav-item {% if request.path == '/kyc/' %}active{% endif %}"><i class="fa-solid fa-id-card nav-icon"></i>KYC Verification</a>{% endif %}
+      {% if 'notifications' not in sidebar_visible.hidden %}
       <a href="{% url 'notifications' %}" class="nav-item {% if request.path == '/notifications/' %}active{% endif %}">
         <i class="fa-solid fa-bell nav-icon"></i>Notifications
         {% if global_unread %}<span class="nav-badge">{{ global_unread }}</span>{% endif %}
       </a>
-      <a href="{% url 'tickets' %}" class="nav-item {% if '/tickets/' in request.path %}active{% endif %}"><i class="fa-solid fa-headset nav-icon"></i>Support</a>
-      <a href="{% url 'login_history' %}" class="nav-item {% if request.path == '/login-history/' %}active{% endif %}"><i class="fa-solid fa-shield-halved nav-icon"></i>Login History</a>
-      <a href="{% url 'profile' %}" class="nav-item {% if request.path == '/profile/' %}active{% endif %}"><i class="fa-solid fa-circle-user nav-icon"></i>Profile</a>
-      <a href="{% url 'settings' %}" class="nav-item {% if request.path == '/settings/' %}active{% endif %}"><i class="fa-solid fa-gear nav-icon"></i>Settings</a>
+      {% endif %}
+      {% if 'tickets' not in sidebar_visible.hidden %}<a href="{% url 'tickets' %}" class="nav-item {% if '/tickets/' in request.path %}active{% endif %}"><i class="fa-solid fa-headset nav-icon"></i>Support</a>{% endif %}
+      {% if 'login_history' not in sidebar_visible.hidden %}<a href="{% url 'login_history' %}" class="nav-item {% if request.path == '/login-history/' %}active{% endif %}"><i class="fa-solid fa-shield-halved nav-icon"></i>Login History</a>{% endif %}
+      {% if 'profile' not in sidebar_visible.hidden %}<a href="{% url 'profile' %}" class="nav-item {% if request.path == '/profile/' %}active{% endif %}"><i class="fa-solid fa-circle-user nav-icon"></i>Profile</a>{% endif %}
+      {% if 'settings' not in sidebar_visible.hidden %}<a href="{% url 'settings' %}" class="nav-item {% if request.path == '/settings/' %}active{% endif %}"><i class="fa-solid fa-gear nav-icon"></i>Settings</a>{% endif %}
 
       {% if request.user.is_staff %}
       <div class="nav-section-label">Admin</div>

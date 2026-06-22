@@ -1,0 +1,22 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Sidebar Menu{% endblock %}
+{% block page_title %}Sidebar Menu Configuration{% endblock %}
+{% block content %}
+<div style="max-width:700px;">
+  <div class="page-header"><div><h1 class="page-title">Sidebar Menu</h1><p class="page-subtitle">Toggle which menu items appear in users' sidebars</p></div></div>
+  <div class="alert alert-info" style="margin-bottom:1.4rem;"><i class="fa-solid fa-circle-info"></i> Turning an item off hides it from the sidebar for all non-admin users. Admins always see all items.</div>
+  <form method="post">{% csrf_token %}
+    <div class="card">
+      <div class="toggle-grid">
+        {% for item in items %}
+        <div class="toggle-item">
+          <div class="toggle-item-info"><div class="toggle-item-label">{{ item.label }}</div></div>
+          <label class="toggle"><input type="checkbox" name="show_{{ item.key }}" {% if item.is_visible %}checked{% endif %}><span class="toggle-slider"></span></label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" style="margin-top:1.25rem;"><i class="fa-solid fa-floppy-disk"></i> Save Menu</button>
+  </form>
+</div>
+{% endblock %}

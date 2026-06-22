@@ -5,11 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-investpro-secret-key-change-in-production'
 DEBUG = True
 # ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = [
-    '.onrender.com',
-    'localhost',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = ['.onrender.com', 'localhost','127.0.0.1',]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -89,5 +85,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email — defaults to console backend (prints emails to server logs).
+# When the admin configures SMTP settings under Settings > Email, send_email()
+# in accounts/email_utils.py will automatically use SMTP instead.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@investpro.com'
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

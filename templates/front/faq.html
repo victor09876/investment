@@ -1,0 +1,55 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ page.title|default:"FAQ" }}{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:4rem 2rem 2rem;">
+  <div style="max-width:700px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+    <h1 style="font-family:var(--ff-d);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;">{{ page.title|default:"Frequently Asked Questions" }}</h1>
+    <p style="color:var(--muted);font-size:1rem;line-height:1.8;">{{ page.subtitle|default:"Everything you need to know before getting started." }}</p>
+  </div>
+</section>
+
+<section class="front-section" style="padding-top:0;">
+  <div style="max-width:760px;margin:0 auto;">
+    {% if faqs %}
+      {% for item in faqs %}
+      <div class="faq-item">
+        <button class="faq-toggle" onclick="toggleFaq(this)">
+          <span>{{ item.q }}</span><i class="fa-solid fa-chevron-down faq-icon"></i>
+        </button>
+        <div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">{{ item.a }}</p></div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="faq-item"><button class="faq-toggle open" onclick="toggleFaq(this)"><span>What is {{ site_settings.site_name|default:"InvestPro" }}?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body" style="display:block;"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">{{ site_settings.site_name|default:"InvestPro" }} is an online investment platform offering daily returns through structured plans. You deposit, choose a plan, and receive daily ROI to your account automatically.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>How do I get started?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">Create a free account, verify your identity (KYC), make your first deposit with Bitcoin, USDT, Ethereum, or PayPal, then activate a plan — it's that simple.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>When and how do I get paid?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">Daily ROI is credited to your Profit Balance every 24 hours. You can withdraw from your Profit Balance or Wallet Balance at any time to your preferred crypto wallet or PayPal.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>Is my money safe?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">We take security seriously — your account is protected by two-factor PIN, secure session management, and KYC identity verification. Login history and new-device alerts help you monitor account access.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>What is the referral programme?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">You earn a percentage of every investment and deposit made by users you refer. Share your unique referral link and watch your profit balance grow passively.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>Can I cancel my investment?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">If the admin has enabled early cancellation, you can cancel an active investment from your dashboard. A cancellation fee applies. Otherwise, investments run their full duration and then return your principal automatically.</p></div></div>
+      <div class="faq-item"><button class="faq-toggle" onclick="toggleFaq(this)"><span>How long does withdrawal take?</span><i class="fa-solid fa-chevron-down faq-icon"></i></button><div class="faq-body"><p style="color:var(--muted);font-size:.9rem;line-height:1.8;">Withdrawal requests are reviewed and processed by our team. Crypto withdrawals typically complete within a few hours; PayPal is usually instant once approved.</p></div></div>
+    {% endif %}
+    <div style="text-align:center;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border-s);">
+      <p style="color:var(--muted);margin-bottom:1rem;">Still have questions? Our support team is here to help.</p>
+      <a href="{% url 'front_contact' %}" class="btn btn-outline"><i class="fa-solid fa-headset"></i> Contact Support</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleFaq(btn){
+  const body=btn.nextElementSibling;
+  const icon=btn.querySelector('.faq-icon');
+  const open=body.style.display==='block';
+  document.querySelectorAll('.faq-body').forEach(b=>b.style.display='none');
+  document.querySelectorAll('.faq-icon').forEach(i=>i.style.transform='');
+  document.querySelectorAll('.faq-toggle').forEach(b=>b.classList.remove('open'));
+  if(!open){body.style.display='block';icon.style.transform='rotate(180deg)';btn.classList.add('open');}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.faq-body').forEach(b=>b.style.display='none');
+  const first=document.querySelector('.faq-toggle');
+  if(first) toggleFaq(first);
+});
+</script>
+{% endblock %}

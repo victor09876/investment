@@ -87,6 +87,29 @@ Branding.get()
 
 if RegistrationCode.objects.count() == 0:
     for i in range(5): RegistrationCode.objects.create(label=f'Invite Code {i+1}',max_uses=10)
+
+from accounts.models import FrontPage, SidebarMenuItem, BlogPost
+if FrontPage.objects.count() == 0:
+    pages = [
+        ('home','Grow Your Wealth With Confidence','Join a transparent, secure investment platform.',''),
+        ('about','About Us','Our mission is to make investing accessible.','InvestPro was founded with a simple belief: every person deserves access to professional-grade investment tools.'),
+        ('how_it_works','How It Works','Investing made simple — five steps and you are earning daily.',''),
+        ('faq','Frequently Asked Questions','Everything you need to know before getting started.',''),
+        ('contact','Get in Touch','Questions, ideas, or support — we are here.',''),
+        ('privacy','Privacy Policy','How we collect, use, and protect your personal information.','# Privacy Policy\n\nPlease see our full policy below.'),
+        ('terms','Terms & Conditions','Please read these terms carefully.','# Terms & Conditions\n\n## 1. Acceptance\n\nBy using our platform you agree to these terms.'),
+    ]
+    for slug, title, subtitle, content_val in pages:
+        FrontPage.objects.create(slug=slug, title=title, subtitle=subtitle, content=content_val)
+    print('  FrontPages seeded')
+if SidebarMenuItem.objects.count() == 0:
+    items = [('plans','Investment Plans'),('my_investments','My Investments'),('calculator','ROI Calculator'),('deposit','Deposit'),('withdrawal','Withdrawal'),('transactions_history','Transactions'),('transfer','Transfer'),('statement','Statement'),('investment_report','Investment Report'),('referrals','Referrals'),('ranking','Ranking'),('kyc','KYC Verification'),('notifications','Notifications'),('tickets','Support'),('login_history','Login History'),('profile','Profile'),('settings','Settings')]
+    for i,(key,label) in enumerate(items): SidebarMenuItem.objects.create(key=key,label=label,sort_order=i)
+    print('  SidebarMenuItems seeded')
+if BlogPost.objects.count() == 0:
+    BlogPost.objects.create(title='Welcome to InvestPro', slug='welcome-to-investpro', excerpt='Discover how InvestPro helps you grow your money with daily returns and transparent investment plans.', content='Welcome to InvestPro — your new home for smart, transparent investing.\n\nOur platform offers daily ROI across a range of carefully structured plans, designed to match investors at every level.\n\nGet started today by creating a free account, completing KYC, and making your first deposit.', category='News', author_name='InvestPro Team')
+    print('  Default blog post created')
+
     print('  5 sample registration codes created')
 print('  ✅ Database ready')
 " 2>/dev/null

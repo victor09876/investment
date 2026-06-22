@@ -38,6 +38,10 @@
       <a href="{% url 'admin_settings' %}" class="admin-nav-item nav-item {% if request.path == '/panel/settings/' %}active{% endif %}"><i class="fa-solid fa-gear"></i>Settings</a>
       <a href="{% url 'admin_branding' %}" class="admin-nav-item nav-item {% if request.path == '/panel/branding/' %}active{% endif %}"><i class="fa-solid fa-palette"></i>Branding</a>
       <a href="{% url 'admin_reg_codes' %}" class="admin-nav-item nav-item {% if request.path == '/panel/reg-codes/' %}active{% endif %}"><i class="fa-solid fa-ticket"></i>Reg. Codes</a>
+      <a href="{% url 'admin_sidebar' %}" class="admin-nav-item nav-item {% if request.path == '/panel/sidebar/' %}active{% endif %}"><i class="fa-solid fa-bars"></i>Sidebar Menu</a>
+      <div class="nav-section-label" style="color:#4A5580;">Website</div>
+      <a href="{% url 'admin_pages' %}" class="admin-nav-item nav-item {% if request.path == '/panel/pages/' %}active{% endif %}"><i class="fa-solid fa-file-lines"></i>Site Pages</a>
+      <a href="{% url 'admin_blog' %}" class="admin-nav-item nav-item {% if '/panel/blog/' in request.path %}active{% endif %}"><i class="fa-solid fa-newspaper"></i>Blog</a>
       <div class="nav-section-label" style="color:#4A5580;">System</div>
       <a href="{% url 'admin_app_info' %}" class="admin-nav-item nav-item {% if request.path == '/panel/app-info/' %}active{% endif %}"><i class="fa-solid fa-circle-info"></i>App Info</a>
       <a href="{% url 'admin_server_info' %}" class="admin-nav-item nav-item {% if request.path == '/panel/server-info/' %}active{% endif %}"><i class="fa-solid fa-server"></i>Server Info</a>
@@ -47,6 +51,7 @@
       <div style="height:1px;background:rgba(255,255,255,.05);margin:.75rem 1rem;"></div>
       <form method="post" action="{% url 'admin_credit_roi' %}" style="padding:0 .75rem .5rem;">{% csrf_token %}<button type="button" onclick="openModal('confirm-roi-modal')" class="btn btn-warning btn-sm btn-block"><i class="fa-solid fa-bolt"></i> Run Tasks Now</button></form>
       <a href="{% url 'dashboard' %}" class="admin-nav-item nav-item" style="color:var(--muted);"><i class="fa-solid fa-house"></i>User Dashboard</a>
+      <a href="/" class="admin-nav-item nav-item" style="color:var(--muted);" target="_blank"><i class="fa-solid fa-globe"></i>Public Site <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.65rem;margin-left:auto;"></i></a>
       <a href="{% url 'logout' %}" class="admin-nav-item nav-item" style="color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
     </nav>
     <div style="padding:.75rem;font-size:.7rem;color:#3A4560;text-align:center;">v{{ site_settings.app_version|default:"1.0.0" }}</div>
@@ -56,7 +61,7 @@
     <div class="topbar-left"><button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button><div class="topbar-title">{% block page_title %}Admin{% endblock %}</div><span class="badge badge-warning" style="font-size:.67rem;"><i class="fa-solid fa-shield-halved"></i> Staff</span></div>
     <div class="topbar-right">
       <div style="font-size:.82rem;color:var(--muted);">{{ request.user.full_name }}</div>
-      <div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ request.user.initials }}</div>
+      {% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" class="avatar" style="width:32px;height:32px;">{% else %}<div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ request.user.initials }}</div>{% endif %}
     </div>
   </header>
   <main class="main-content">{% block content %}{% endblock %}</main>

@@ -74,6 +74,24 @@ class SiteSettings(models.Model):
     cron_interval_minutes          = models.PositiveIntegerField(default=5)
     cron_last_tick                 = models.DateTimeField(null=True, blank=True)
 
+    # Company email / SMTP settings
+    company_email        = models.EmailField(blank=True, default='support@investpro.com')
+    support_email        = models.EmailField(blank=True, default='support@investpro.com')
+    smtp_host            = models.CharField(max_length=200, blank=True)
+    smtp_port            = models.PositiveIntegerField(default=587)
+    smtp_username        = models.CharField(max_length=200, blank=True)
+    smtp_password        = models.CharField(max_length=200, blank=True)
+    smtp_use_tls         = models.BooleanField(default=True)
+    email_from_name      = models.CharField(max_length=100, default='InvestPro')
+
+    # Company contact info (for Contact page)
+    company_phone        = models.CharField(max_length=30, blank=True)
+    company_address      = models.CharField(max_length=300, blank=True)
+
+    # Referral-on-deposit commission
+    allow_deposit_referral_bonus = models.BooleanField(default=False)
+    deposit_referral_bonus_pct   = models.DecimalField(max_digits=5, decimal_places=2, default=5)
+
     @classmethod
     def get(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
@@ -149,6 +167,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         return check_password(pin, self.withdrawal_pin)
 
     def __str__(self): return self.email
+
+
+class PasswordResetToken(models.Model):
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reset_tokens')
+    token      = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used       = models.BooleanField(default=False)
+
+    def is_valid(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return not self.used and (timezone.now() - self.created_at) < timedelta(hours=1)
+
+    @staticmethod
+    def generate(user):
+        import secrets
+        token = secrets.token_urlsafe(32)
+        return PasswordResetToken.objects.create(user=user, token=token)
 
 
 class Notification(models.Model):
@@ -412,14 +448,71 @@ class FrontPage(models.Model):
     SLUGS = [
         ('home','Home'),('about','About Us'),('contact','Contact'),
         ('privacy','Privacy Policy'),('terms','Terms & Conditions'),
-        ('faq','FAQ'),('plans','Investment Plans'),
+        ('faq','FAQ'),('how_it_works','How It Works'),
+        ('plans','Investment Plans'),
         ('referral','Referral Program'),
     ]
-    slug       = models.CharField(max_length=50, unique=True)
-    title      = models.CharField(max_length=200)
-    content    = models.TextField(blank=True)
-    meta_desc  = models.CharField(max_length=300, blank=True)
-    is_active  = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    slug         = models.CharField(max_length=50, unique=True)
+    title        = models.CharField(max_length=200)
+    subtitle     = models.CharField(max_length=300, blank=True)
+    content      = models.TextField(blank=True)
+    meta_desc    = models.CharField(max_length=300, blank=True)
+    hero_image   = models.ImageField(upload_to='frontpages/', null=True, blank=True)
+    is_active    = models.BooleanField(default=True)
+    updated_at   = models.DateTimeField(auto_now=True)
 
     def __str__(self): return self.title
+
+
+# ─────────────────────────────────────────────
+# BLOG
+# ─────────────────────────────────────────────
+class BlogPost(models.Model):
+    title        = models.CharField(max_length=200)
+    slug         = models.SlugField(max_length=220, unique=True)
+    excerpt      = models.CharField(max_length=400, blank=True)
+    content      = models.TextField(blank=True)
+    cover_image  = models.ImageField(upload_to='blog/', null=True, blank=True)
+    author_name  = models.CharField(max_length=100, default='InvestPro Team')
+    category     = models.CharField(max_length=80, blank=True)
+    is_published = models.BooleanField(default=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta: ordering = ['-created_at']
+
+    def __str__(self): return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            base = slugify(self.title)[:200]
+            slug = base
+            i = 1
+            while BlogPost.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                i += 1
+                slug = f'{base}-{i}'
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+
+# ─────────────────────────────────────────────
+# SIDEBAR MENU CONFIGURATION
+# ─────────────────────────────────────────────
+class SidebarMenuItem(models.Model):
+    """Lets the admin toggle which sidebar nav items are visible to users."""
+    key          = models.CharField(max_length=50, unique=True)
+    label        = models.CharField(max_length=100)
+    is_visible   = models.BooleanField(default=True)
+    sort_order   = models.PositiveIntegerField(default=0)
+
+    class Meta: ordering = ['sort_order']
+
+    def __str__(self): return self.label
+
+    @classmethod
+    def is_enabled(cls, key, default=True):
+        item = cls.objects.filter(key=key).first()
+        if item is None:
+            return default
+        return item.is_visible

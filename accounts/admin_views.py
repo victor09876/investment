@@ -11,7 +11,7 @@ import django, sys, platform, os
 from .models import (User, Notification, SiteSettings, RegistrationCode,
                      LoginHistory, CacheLog, SupportTicket, TicketMessage,
                      KYCField, KYCSubmission, KYCAnswer, Branding, Rank, CronJobLog,
-                     InvestmentDuration, FrontPage)
+                     InvestmentDuration, FrontPage, BlogPost, SidebarMenuItem)
 from investments.models import Plan, Investment
 from transactions.models import Transaction
 
@@ -173,6 +173,20 @@ def admin_transactions(request):
                         txn.user.wallet_balance += txn.net_amount
                         txn.user.save(update_fields=['wallet_balance'])
                         Notification.objects.create(user=txn.user,type='deposit',title=f'Deposit Confirmed — ${txn.amount:,.2f}',body=f'Your ${txn.amount:,.2f} deposit has been credited.')
+
+                        # Referral commission on deposit (if enabled)
+                        site = SiteSettings.get()
+                        if site.allow_deposit_referral_bonus and txn.user.referred_by:
+                            ref_bonus = txn.amount * site.deposit_referral_bonus_pct / 100
+                            referrer = txn.user.referred_by
+                            referrer.profit_balance += ref_bonus
+                            referrer.save(update_fields=['profit_balance'])
+                            Transaction.objects.create(user=referrer, type='referral', method='wallet',
+                                amount=ref_bonus, net_amount=ref_bonus, status='completed',
+                                description=f'Referral deposit bonus from {txn.user.full_name} ({site.deposit_referral_bonus_pct}%)')
+                            Notification.objects.create(user=referrer, type='referral',
+                                title=f'Referral Bonus — ${ref_bonus:,.2f}',
+                                body=f'You earned ${ref_bonus:,.2f} ({site.deposit_referral_bonus_pct}%) because {txn.user.full_name} made a deposit.')
                     elif txn.type == 'withdrawal' and txn.status in ('pending','processing'):
                         txn.status='completed'; txn.processed_at=timezone.now(); txn.save()
                         Notification.objects.create(user=txn.user,type='withdrawal',title=f'Withdrawal Paid — ${txn.amount:,.2f}',body=f'Your withdrawal of ${txn.amount:,.2f} has been processed.')
@@ -258,14 +272,18 @@ def admin_settings(request):
             'currency','currency_symbol','timezone','records_per_page',
             'transfer_fee_pct','custom_css','app_version','maintenance_message',
             'allow_investment_cancellation','deposit_timeout_minutes','cron_interval_minutes',
+            'allow_deposit_referral_bonus','deposit_referral_bonus_pct',
+            'company_email','support_email','smtp_host','smtp_port','smtp_username',
+            'smtp_password','smtp_use_tls','email_from_name','company_phone','company_address',
         ]
         bool_fields = ['maintenance_mode','require_reg_code','allow_registration','allow_google_login',
                        'allow_apple_login','allow_metamask_login','allow_transfer','allow_ranking',
                        'require_kyc_deposit','require_kyc_withdraw','require_email_verify',
-                       'allow_withdraw_holiday','secure_password','allow_investment_cancellation']
+                       'allow_withdraw_holiday','secure_password','allow_investment_cancellation',
+                       'allow_deposit_referral_bonus','smtp_use_tls']
         decimal_fields = ['min_deposit','min_withdrawal','withdrawal_fee_pct','cancellation_fee_pct',
-                          'welcome_bonus','transfer_fee_pct']
-        int_fields = ['records_per_page','deposit_timeout_minutes','cron_interval_minutes']
+                          'welcome_bonus','transfer_fee_pct','deposit_referral_bonus_pct']
+        int_fields = ['records_per_page','deposit_timeout_minutes','cron_interval_minutes','smtp_port']
         for f in fields:
             if f in bool_fields:
                 setattr(site, f, request.POST.get(f) == 'on')
@@ -275,6 +293,10 @@ def admin_settings(request):
             elif f in int_fields:
                 try: setattr(site, f, int(request.POST.get(f, getattr(site, f, 5))))
                 except: pass
+            elif f == 'smtp_password':
+                val = request.POST.get(f, '')
+                if val:  # only update if a new password was entered
+                    setattr(site, f, val)
             else:
                 setattr(site, f, request.POST.get(f,''))
         if 'maintenance_image' in request.FILES:
@@ -585,3 +607,119 @@ def admin_credit_roi(request):
         result = run_all_cron_tasks(trigger='manual')
         messages.success(request, f"ROI credited to {result['roi_count']} investments. {result['completed_count']} completed. {result['expired_count']} expired deposits cleaned up.")
     return redirect('admin_dashboard')
+
+
+# ─────────────────────────────────────────────
+# CMS: FRONT PAGES
+# ─────────────────────────────────────────────
+@staff_view
+def admin_pages(request):
+    # Ensure all known slugs exist
+    for slug, title in FrontPage.SLUGS:
+        FrontPage.objects.get_or_create(slug=slug, defaults={'title': title})
+    pages = FrontPage.objects.all().order_by('title')
+    return render(request, 'custom_admin/pages.html', {'pages': pages})
+
+
+@staff_view
+def admin_page_edit(request, pk):
+    page = get_object_or_404(FrontPage, pk=pk)
+    if request.method == 'POST':
+        page.title     = request.POST.get('title', page.title)
+        page.subtitle  = request.POST.get('subtitle', '')
+        page.content   = request.POST.get('content', '')
+        page.meta_desc = request.POST.get('meta_desc', '')
+        page.is_active = 'is_active' in request.POST
+        if request.FILES.get('hero_image'):
+            page.hero_image = request.FILES['hero_image']
+        page.save()
+        messages.success(request, f'{page.title} page updated.')
+        return redirect('admin_pages')
+    return render(request, 'custom_admin/page_edit.html', {'page': page})
+
+
+# ─────────────────────────────────────────────
+# CMS: BLOG
+# ─────────────────────────────────────────────
+@staff_view
+def admin_blog(request):
+    posts = BlogPost.objects.all().order_by('-created_at')
+    return render(request, 'custom_admin/blog.html', {'posts': posts})
+
+
+@staff_view
+def admin_blog_new(request):
+    if request.method == 'POST':
+        post = BlogPost.objects.create(
+            title=request.POST.get('title','Untitled'),
+            excerpt=request.POST.get('excerpt',''),
+            content=request.POST.get('content',''),
+            category=request.POST.get('category',''),
+            author_name=request.POST.get('author_name','InvestPro Team'),
+            is_published='is_published' in request.POST,
+        )
+        if request.FILES.get('cover_image'):
+            post.cover_image = request.FILES['cover_image']
+            post.save()
+        messages.success(request, 'Blog post created.')
+        return redirect('admin_blog_edit', pk=post.pk)
+    return render(request, 'custom_admin/blog_edit.html', {'post': None})
+
+
+@staff_view
+def admin_blog_edit(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    if request.method == 'POST':
+        post.title       = request.POST.get('title', post.title)
+        post.excerpt     = request.POST.get('excerpt','')
+        post.content     = request.POST.get('content','')
+        post.category    = request.POST.get('category','')
+        post.author_name = request.POST.get('author_name','InvestPro Team')
+        post.is_published= 'is_published' in request.POST
+        if request.FILES.get('cover_image'):
+            post.cover_image = request.FILES['cover_image']
+        post.save()
+        messages.success(request, 'Blog post updated.')
+        return redirect('admin_blog')
+    return render(request, 'custom_admin/blog_edit.html', {'post': post})
+
+
+@staff_view
+def admin_blog_delete(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Blog post deleted.')
+    return redirect('admin_blog')
+
+
+# ─────────────────────────────────────────────
+# SIDEBAR MENU CONFIGURATION
+# ─────────────────────────────────────────────
+SIDEBAR_ITEMS = [
+    ('plans', 'Investment Plans'), ('my_investments', 'My Investments'),
+    ('calculator', 'ROI Calculator'), ('deposit', 'Deposit'),
+    ('withdrawal', 'Withdrawal'), ('transactions_history', 'Transactions'),
+    ('transfer', 'Transfer'), ('statement', 'Account Statement'),
+    ('investment_report', 'Investment Report'),
+    ('referrals', 'Referrals'), ('ranking', 'Ranking'),
+    ('kyc', 'KYC Verification'), ('notifications', 'Notifications'),
+    ('tickets', 'Support'), ('login_history', 'Login History'),
+    ('profile', 'Profile'), ('settings', 'Settings'),
+]
+
+
+@staff_view
+def admin_sidebar(request):
+    # Ensure all known items exist
+    for i, (key, label) in enumerate(SIDEBAR_ITEMS):
+        SidebarMenuItem.objects.get_or_create(key=key, defaults={'label': label, 'sort_order': i})
+    if request.method == 'POST':
+        for key, label in SIDEBAR_ITEMS:
+            item = SidebarMenuItem.objects.get(key=key)
+            item.is_visible = f'show_{key}' in request.POST
+            item.save(update_fields=['is_visible'])
+        messages.success(request, 'Sidebar menu updated.')
+        return redirect('admin_sidebar')
+    items = SidebarMenuItem.objects.all().order_by('sort_order')
+    return render(request, 'custom_admin/sidebar_config.html', {'items': items})

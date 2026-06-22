@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% load static %}
 {% block title %}Profile{% endblock %}
 {% block page_title %}My Profile{% endblock %}
 {% block content %}
@@ -12,8 +13,23 @@
           <div class="form-group"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}">{% if form.first_name.errors %}<p class="form-error">{{ form.first_name.errors.0 }}</p>{% endif %}</div>
           <div class="form-group"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}">{% if form.last_name.errors %}<p class="form-error">{{ form.last_name.errors.0 }}</p>{% endif %}</div>
         </div>
-        <div class="form-group"><label class="form-label">Phone</label><input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}"></div>
-        <div class="form-group"><label class="form-label">Country</label><input type="text" name="country" class="form-control" value="{{ form.country.value|default:'' }}"></div>
+        <div class="form-group"><label class="form-label">Profile Picture</label>
+          <div style="display:flex;align-items:center;gap:14px;">
+            {% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" class="avatar" style="width:56px;height:56px;">{% else %}<div class="avatar-ph" style="width:56px;height:56px;font-size:1.2rem;">{{ request.user.initials }}</div>{% endif %}
+            <input type="file" name="avatar" class="form-control" accept="image/*" style="flex:1;">
+          </div>
+          <p class="form-hint">JPG or PNG, square images work best.</p>
+        </div>
+        <div class="form-group"><label class="form-label">Country</label><select name="country" id="prof-country" class="form-control"><option value="">Select country</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">State / Province</label><select name="state" id="prof-state" class="form-control"><option value="">Select country first</option></select></div>
+          <div class="form-group"><label class="form-label">Phone</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="prof-dial" name="dial_code" class="form-control" value="{{ request.user.dial_code }}" placeholder="+--" readonly style="width:80px;text-align:center;background:var(--elevated);flex-shrink:0;">
+              <input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" style="flex:1;">
+            </div>
+          </div>
+        </div>
         <div class="form-group"><label class="form-label">Address</label><textarea name="address" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" name="date_of_birth" class="form-control" value="{{ form.date_of_birth.value|default:'' }}"></div>
@@ -67,4 +83,16 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/countries.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  populateCountrySelect('prof-country','{{ request.user.country }}');
+  onCountryChange('prof-country','prof-dial','prof-state','{{ request.user.state }}');
+  document.getElementById('prof-country').addEventListener('change', ()=>{
+    onCountryChange('prof-country','prof-dial','prof-state');
+  });
+});
+</script>
 {% endblock %}

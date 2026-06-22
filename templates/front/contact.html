@@ -1,0 +1,49 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ page.title|default:"Contact Us" }}{% endblock %}
+{% block meta_desc %}{{ page.meta_desc|default:"Get in touch with our team." }}{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:4rem 2rem 2rem;">
+  <div style="max-width:800px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+    <h1 style="font-family:var(--ff-d);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;">{{ page.title|default:"Get in Touch" }}</h1>
+    <p style="color:var(--muted);font-size:1.05rem;line-height:1.8;">{{ page.subtitle|default:"Questions, feedback, or partnership ideas — we'd love to hear from you." }}</p>
+  </div>
+</section>
+
+<section class="front-section" style="padding-top:0;">
+  <div style="max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1.3fr;gap:2rem;">
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="card">
+        <div class="plan-icon"><i class="fa-solid fa-envelope"></i></div>
+        <h3 style="font-family:var(--ff-d);font-size:.95rem;margin-bottom:.4rem;">Email</h3>
+        <p style="color:var(--muted);font-size:.85rem;">{{ site.support_email|default:site.company_email|default:"support@investpro.com" }}</p>
+      </div>
+      {% if site.company_phone %}
+      <div class="card">
+        <div class="plan-icon"><i class="fa-solid fa-phone"></i></div>
+        <h3 style="font-family:var(--ff-d);font-size:.95rem;margin-bottom:.4rem;">Phone</h3>
+        <p style="color:var(--muted);font-size:.85rem;">{{ site.company_phone }}</p>
+      </div>
+      {% endif %}
+      {% if site.company_address %}
+      <div class="card">
+        <div class="plan-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <h3 style="font-family:var(--ff-d);font-size:.95rem;margin-bottom:.4rem;">Address</h3>
+        <p style="color:var(--muted);font-size:.85rem;">{{ site.company_address }}</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.1rem;">Send us a message</div>
+      <form method="post">{% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">Name</label><input type="text" name="name" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">Subject</label><input type="text" name="subject" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea name="message" class="form-control" rows="5" required></textarea></div>
+        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

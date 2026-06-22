@@ -1,0 +1,50 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ page.title|default:"How It Works" }}{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:4rem 2rem 2rem;">
+  <div style="max-width:700px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+    <h1 style="font-family:var(--ff-d);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;">{{ page.title|default:"How It Works" }}</h1>
+    <p style="color:var(--muted);font-size:1rem;line-height:1.8;">{{ page.subtitle|default:"Investing made simple — four steps and you're earning daily." }}</p>
+  </div>
+</section>
+<section class="front-section" style="padding-top:1rem;">
+  <div style="max-width:900px;margin:0 auto;">
+    {% if page.content %}
+    <div style="color:var(--muted);font-size:.95rem;line-height:1.9;margin-bottom:3rem;">
+      {% for para in page.content.splitlines %}{% if para.strip %}<p style="margin-bottom:1.25rem;">{{ para }}</p>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    <!-- STEPS -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:4rem;">
+      {% for step_num,icon,title,text in steps %}
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;">
+        <div style="flex-shrink:0;width:52px;height:52px;border-radius:12px;background:var(--teal-glow);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--ff-m);font-weight:700;color:var(--teal);font-size:1.1rem;">{{ step_num }}</div>
+        <div class="card" style="flex:1;padding:1.25rem;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:.6rem;"><i class="fa-solid fa-{{ icon }}" style="color:var(--teal);font-size:1.1rem;"></i><h3 style="font-family:var(--ff-d);font-size:.98rem;font-weight:700;">{{ title }}</h3></div>
+          <p style="color:var(--muted);font-size:.86rem;line-height:1.75;">{{ text }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <!-- PLANS MINI-GRID -->
+    <div style="text-align:center;margin-bottom:2rem;">
+      <h2 class="front-section-title">Choose Your Plan</h2>
+      <p class="front-section-sub" style="margin:0 auto 2rem;">Each plan has a different daily ROI and duration — invest what suits your goals.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:3rem;">
+      {% for plan in plans %}
+      <div class="card" style="text-align:center;padding:1.5rem;">
+        <div class="plan-icon" style="margin:0 auto 1rem;"><i class="fa-solid fa-{{ plan.fa_icon }}"></i></div>
+        <div style="font-family:var(--ff-d);font-weight:700;margin-bottom:.5rem;">{{ plan.name }}</div>
+        <div class="plan-rate" style="font-size:1.8rem;">{{ plan.daily_roi }}%</div>
+        <div class="plan-period">Daily ROI • {{ plan.duration_days }} days</div>
+        <div class="plan-range" style="margin-top:.75rem;">${{ plan.min_amount|floatformat:0 }}{% if plan.max_amount %} – ${{ plan.max_amount|floatformat:0 }}{% else %}+{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;">
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-rocket"></i> Start Now — It's Free</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

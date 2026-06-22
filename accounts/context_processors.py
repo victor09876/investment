@@ -21,8 +21,20 @@ def site_context(request):
         except Exception:
             pass
 
+    # Sidebar menu visibility map (staff always see everything)
+    sidebar_visible = {}
+    try:
+        from .models import SidebarMenuItem
+        hidden_keys = set(SidebarMenuItem.objects.filter(is_visible=False).values_list('key', flat=True))
+        if request.user.is_authenticated and request.user.is_staff:
+            hidden_keys = set()
+        sidebar_visible = {'hidden': hidden_keys}
+    except Exception:
+        sidebar_visible = {'hidden': set()}
+
     return {
         'site_settings': settings,
         'branding': branding,
         'global_unread': unread_count,
+        'sidebar_visible': sidebar_visible,
     }

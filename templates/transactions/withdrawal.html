@@ -38,7 +38,6 @@
           <div class="method-card selected" onclick="selWMethod(this,'bitcoin','~30 min','Bitcoin (BTC)')"><div class="m-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="m-name">Bitcoin</div><div class="m-sub">~30 min</div></div>
           <div class="method-card" onclick="selWMethod(this,'usdt_trc20','~15 min','USDT TRC20')"><div class="m-icon"><i class="fa-solid fa-money-bill"></i></div><div class="m-name">USDT</div><div class="m-sub">~15 min</div></div>
           <div class="method-card" onclick="selWMethod(this,'ethereum','~20 min','Ethereum (ETH)')"><div class="m-icon"><i class="fa-brands fa-ethereum"></i></div><div class="m-name">Ethereum</div><div class="m-sub">~20 min</div></div>
-          <div class="method-card" onclick="selWMethod(this,'bank_transfer','1-3 days','Bank Transfer')"><div class="m-icon"><i class="fa-solid fa-building-columns"></i></div><div class="m-name">Bank Transfer</div><div class="m-sub">1-3 days</div></div>
           <div class="method-card" onclick="selWMethod(this,'paypal','Instant','PayPal')"><div class="m-icon"><i class="fa-brands fa-paypal"></i></div><div class="m-name">PayPal</div><div class="m-sub">Instant</div></div>
         </div>
         <input type="hidden" name="method" id="wmethod-input" value="bitcoin">
@@ -132,9 +131,9 @@ function selWMethod(el,method,time,name){
   document.getElementById('wmethod-input').value=method;
   document.getElementById('ws-method').textContent=name;
   document.getElementById('ws-time').textContent=time;
-  const labels={bitcoin:'Bitcoin Wallet Address',usdt_trc20:'USDT Wallet Address',ethereum:'Ethereum Address',bank_transfer:'Bank Account Details',paypal:'PayPal Email'};
-  const icons={bitcoin:'<i class="fa-brands fa-bitcoin"></i>',usdt_trc20:'<i class="fa-solid fa-money-bill"></i>',ethereum:'<i class="fa-brands fa-ethereum"></i>',bank_transfer:'<i class="fa-solid fa-building-columns"></i>',paypal:'<i class="fa-brands fa-paypal"></i>'};
-  const placeholders={bitcoin:'bc1q...',usdt_trc20:'TXxxxx...',ethereum:'0x...',bank_transfer:'Account number / IBAN',paypal:'your@paypal.email'};
+  const labels={bitcoin:'Bitcoin Wallet Address',usdt_trc20:'USDT Wallet Address',ethereum:'Ethereum Address',paypal:'PayPal Email'};
+  const icons={bitcoin:'<i class="fa-brands fa-bitcoin"></i>',usdt_trc20:'<i class="fa-solid fa-money-bill"></i>',ethereum:'<i class="fa-brands fa-ethereum"></i>',paypal:'<i class="fa-brands fa-paypal"></i>'};
+  const placeholders={bitcoin:'bc1q...',usdt_trc20:'TXxxxx...',ethereum:'0x...',paypal:'your@paypal.email'};
   document.getElementById('dest-label').textContent=labels[method]||'Destination';
   document.getElementById('dest-icon').innerHTML=icons[method]||'<i class="fa-solid fa-arrow-right"></i>';
   document.getElementById('dest-input').placeholder=placeholders[method]||'Enter destination';

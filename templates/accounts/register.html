@@ -73,6 +73,11 @@
       </div>
       {% endif %}
       <p class="auth-footer" style="margin-top:1.15rem;">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+      <div style="margin-top:.75rem;display:flex;justify-content:center;gap:1rem;font-size:.74rem;">
+        <a href="/" style="color:var(--faint);"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <a href="{% url 'front_privacy' %}" style="color:var(--faint);">Privacy</a>
+        <a href="{% url 'front_terms' %}" style="color:var(--faint);">Terms</a>
+      </div>
     </div>
   </div>
 </div>

@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/',           views.login_view,            name='login'),
     path('logout/',          views.logout_view,           name='logout'),
     path('forgot-password/', views.forgot_password_view,  name='forgot_password'),
+    path('reset-password/<str:token>/', views.reset_password_view, name='reset_password'),
     path('profile/',         views.profile_view,          name='profile'),
     path('settings/',        views.settings_view,         name='settings'),
     path('change-password/', views.change_password_view,  name='change_password'),
@@ -21,4 +22,5 @@ urlpatterns = [
     path('tickets/',         views.tickets_view,          name='tickets'),
     path('tickets/<uuid:pk>/', views.ticket_detail_view,  name='ticket_detail'),
     path('statement/',       views.statement_view,        name='statement'),
+    path('investment-report/', views.investment_report_view, name='investment_report'),
 ]
