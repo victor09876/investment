@@ -1,11 +1,19 @@
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-investpro-secret-key-change-in-production'
 DEBUG = True
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = ['.onrender.com', 'localhost','127.0.0.1',]
+
+
+DATABASES = {
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+}
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
