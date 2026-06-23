@@ -40,7 +40,7 @@
       <tbody>
       {% for inv in investments %}
       <tr>
-        <td><i class="fa-solid fa-{{ inv.plan.fa_icon }}" style="color:var(--gold);margin-right:6px;"></i>{{ inv.plan.name }}</td>
+        <td><i class="fa-solid fa-{{ inv.plan.fa_icon }}" style="color:var(--gold);margin-right:6px;"></i>&nbsp;{{ inv.plan.name }}</td>
         <td style="font-weight:600;">${{ inv.amount|floatformat:2 }}</td>
         <td>{{ inv.plan.daily_roi }}%</td>
         <td style="color:var(--green);font-weight:600;">${{ inv.profit_earned|floatformat:2 }}</td>

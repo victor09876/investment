@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+{% block title %}Ranking{% endblock %}
+{% block page_title %}Ranking System{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Investor Ranking</h1><p class="page-subtitle">Unlock exclusive benefits as you grow</p></div>
+</div>
+
+<!-- CURRENT RANK CARD -->
+<div class="card card-gold" style="margin-bottom:1.75rem;">
+  <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+    <div style="width:72px;height:72px;border-radius:14px;background:var(--teal-glow);border:1px solid var(--border);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.75rem;flex-shrink:0;">
+      <i class="fa-solid fa-trophy"></i>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:.8rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Current Rank</div>
+      <div style="font-family:var(--ff-d);font-size:1.6rem;font-weight:800;color:var(--gold);">{{ current_rank.name|default:"Unranked" }}</div>
+      {% if current_rank %}<div style="font-size:.85rem;color:var(--muted);margin-top:4px;">{{ current_rank.description }}</div>{% else %}<div style="font-size:.85rem;color:var(--muted);margin-top:4px;">Make your first deposit and investment to earn a rank.</div>{% endif %}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;text-align:center;">
+      <div><div style="font-family:var(--ff-d);font-weight:700;font-size:1.1rem;color:var(--gold);">${{ total_dep|floatformat:2 }}</div><div style="font-size:.73rem;color:var(--faint);">Total Deposited</div></div>
+      <div><div style="font-family:var(--ff-d);font-weight:700;font-size:1.1rem;">${{ total_inv|floatformat:2 }}</div><div style="font-size:.73rem;color:var(--faint);">Total Invested</div></div>
+      <div><div style="font-family:var(--ff-d);font-weight:700;font-size:1.1rem;">{{ ref_count }}</div><div style="font-size:.73rem;color:var(--faint);">Referrals</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RANK TIERS -->
+<div style="margin-bottom:1.75rem;">
+  <h2 style="font-family:var(--ff-d);font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;"><i class="fa-solid fa-layer-group" style="color:var(--gold);margin-right:8px;"></i>Rank Tiers</h2>
+  <div class="grid-3">
+  {% for rank in ranks %}
+  <div class="rank-card {% if current_rank and current_rank.id == rank.id %}current{% endif %}">
+    {% if current_rank and current_rank.id == rank.id %}<div style="position:absolute;top:1rem;right:1rem;"><span class="badge badge-gold"><i class="fa-solid fa-star"></i> Current</span></div>{% endif %}
+    <div class="rank-icon" style="background:{{ rank.color }}22;color:{{ rank.color }};"><i class="fa-solid fa-trophy"></i></div>
+    <div style="font-family:var(--ff-d);font-size:1.05rem;font-weight:700;margin-bottom:.25rem;">{{ rank.name }}</div>
+    <div style="font-size:.79rem;color:var(--faint);margin-bottom:1.1rem;">{{ rank.description }}</div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:.82rem;margin-bottom:1.1rem;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);"><i class="fa-solid fa-wallet" style="width:16px;"></i> Min Deposit</span><span style="font-weight:600;">${{ rank.min_deposit|floatformat:0 }}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);"><i class="fa-solid fa-users" style="width:16px;"></i> Referrals</span><span style="font-weight:600;">{{ rank.min_referrals }}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);"><i class="fa-solid fa-chart-line" style="width:16px;"></i> Min Investment</span><span style="font-weight:600;">${{ rank.min_investment|floatformat:0 }}</span></div>
+    </div>
+    <div style="height:1px;background:var(--border-s);margin-bottom:1.1rem;"></div>
+    <div style="font-size:.79rem;color:var(--faint);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Benefits</div>
+    <div style="display:flex;flex-direction:column;gap:5px;font-size:.82rem;">
+      {% if rank.weekly_reward > 0 %}<div><i class="fa-solid fa-gift" style="color:var(--green);width:16px;"></i> ${{ rank.weekly_reward|floatformat:2 }} weekly reward</div>{% endif %}
+      {% if rank.rank_bonus_pct > 0 %}<div><i class="fa-solid fa-percent" style="color:var(--blue);width:16px;"></i> {{ rank.rank_bonus_pct }}% rank bonus</div>{% endif %}
+      {% if rank.special_roi_pct > 0 %}<div><i class="fa-solid fa-star" style="color:var(--gold);width:16px;"></i> +{{ rank.special_roi_pct }}% special ROI</div>{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-trophy fa-2x empty-state-icon"></i><div class="empty-state-title">No ranks configured</div><div class="empty-state-text">Admin has not set up ranking tiers yet.</div></div>
+  {% endfor %}
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="card">
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-ranking-star" style="color:var(--gold);margin-right:8px;"></i>Top Investors Leaderboard</div></div>
+  <div style="display:flex;flex-direction:column;gap:.5rem;">
+  {% for u in leaderboard %}
+  <div class="lb-row">
+    <div class="lb-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% else %}other{% endif %}">#{{ forloop.counter }}</div>
+    <div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ u.initials }}</div>
+    <div style="flex:1;"><div style="font-size:.87rem;font-weight:600;">{{ u.first_name }} {{ u.last_name|slice:":1" }}.</div><div style="font-size:.73rem;color:var(--faint);">{{ u.country|default:"Global" }}</div></div>
+    <div style="text-align:right;"><div style="font-family:var(--ff-d);font-weight:700;color:var(--gold);">${{ u.total|default:0|floatformat:2 }}</div><div style="font-size:.72rem;color:var(--faint);">Total Deposited</div></div>
+    {% if u.id == request.user.id %}<span class="badge badge-gold"><i class="fa-solid fa-user"></i> You</span>{% endif %}
+  </div>
+  {% empty %}
+  <div style="text-align:center;color:var(--faint);padding:2rem;font-size:.87rem;"><i class="fa-solid fa-ranking-star fa-2x" style="margin-bottom:.75rem;opacity:.3;display:block;"></i>No leaderboard data yet.</div>
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}

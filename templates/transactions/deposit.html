@@ -2,7 +2,7 @@
 {% block title %}Deposit{% endblock %}
 {% block page_title %}Deposit Funds{% endblock %}
 {% block content %}
-<div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;">
+<div>
   <!-- LEFT -->
   <div>
     <form method="post" enctype="multipart/form-data" id="dep-form">{% csrf_token %}
@@ -14,7 +14,7 @@
             <div class="m-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="m-name">Bitcoin</div><div class="m-sub">BTC</div>
           </div>
           <div class="method-card" data-method="usdt_trc20" data-target="det-crypto" onclick="selectMethod(this,'usdt_trc20')">
-            <div class="m-icon"><i class="fa-solid fa-money-bill"></i></div><div class="m-name">USDT</div><div class="m-sub">TRC20 / ERC20</div>
+            <div class="m-icon"><i class="fa-solid fa-money-bill"></i></div><div class="m-name">USDT</div><div class="m-sub">TRC20</div>
           </div>
           <div class="method-card" data-method="ethereum" data-target="det-crypto" onclick="selectMethod(this,'ethereum')">
             <div class="m-icon"><i class="fa-brands fa-ethereum"></i></div><div class="m-name">Ethereum</div><div class="m-sub">ETH</div>
@@ -44,7 +44,7 @@
 
         <!-- CRYPTO DETAILS -->
         <div id="det-crypto">
-          <div class="alert alert-info" style="margin-bottom:1rem;"><i class="fa-solid fa-circle-info"></i> Send exact amount in <strong id="coin-name">Bitcoin (BTC)</strong> to the wallet below. Credited after 1 confirmation.</div>
+          <div class="alert alert-info" style="margin-bottom:1rem;"><div><i class="fa-solid fa-circle-info"></i>&nbsp; Send exact amount in <strong id="coin-name">Bitcoin (BTC)</strong> to the wallet below. Credited after 1 confirmation.</div></div>
           <div style="background:var(--navy-3);border-radius:var(--radius);padding:1.1rem;margin-bottom:1rem;">
             <div style="font-size:.77rem;color:var(--faint);margin-bottom:7px;font-weight:600;">Send to wallet address:</div>
             <div style="display:flex;align-items:center;gap:9px;">
@@ -52,10 +52,9 @@
               <button type="button" class="btn btn-outline btn-sm" onclick="copyText(document.getElementById('wallet-addr').textContent,'Address copied!')"><i class="fa-solid fa-copy"></i></button>
             </div>
           </div>
-          <div style="background:var(--amber-bg);border:1px solid rgba(240,165,0,.2);border-radius:var(--radius);padding:.9rem;font-size:.81rem;color:var(--amber);"><i class="fa-solid fa-triangle-exclamation"></i>️ Only send <span id="coin-short">BTC</span> to this address. Wrong coin = permanent loss.</div>
+          <div style="background:var(--amber-bg);border:1px solid rgba(240,165,0,.2);border-radius:var(--radius);padding:.9rem;font-size:.81rem;color:var(--amber);"><i class="fa-solid fa-triangle-exclamation"></i>️&nbsp; Only send <span id="coin-short">BTC</span> to this address. Wrong coin = permanent loss.</div>
         </div>
 
-        <!-- BANK DETAILS -->
       </div>
 
       <!-- STEP 3: PROOF (hidden for card payments — instant processing) -->
@@ -77,7 +76,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg btn-block">Submit Deposit Request <i class="fa-solid fa-check"></i></button>
+      <button style="margin-bottom:1.15rem;" type="submit" class="btn btn-primary btn-lg btn-block">Submit Deposit Request <i class="fa-solid fa-check"></i></button>
     </form>
   </div>
 
@@ -113,7 +112,7 @@
       </div>
       {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:.75rem;">No deposits yet.</div>{% endfor %}
     </div>
-    <div style="background:var(--green-bg);border:1px solid rgba(46,204,138,.2);border-radius:var(--radius);padding:.9rem;font-size:.8rem;color:var(--green);"><i class="fa-solid fa-lock"></i> All transactions are encrypted with bank-grade SSL security.</div>
+    <div style="background:var(--green-bg);border:1px solid rgba(46,204,138,.2);border-radius:var(--radius);padding:.9rem;font-size:.8rem;color:var(--green);"><i class="fa-solid fa-lock"></i>&nbsp; All transactions are encrypted with bank-grade SSL security.</div>
   </div>
 </div>
 {% endblock %}

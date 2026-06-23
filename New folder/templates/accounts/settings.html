@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block content %}
+<div style="max-width:680px;">
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-lock"></i> Security Settings</div></div>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--navy-3);border-radius:var(--radius);"><div><div style="font-weight:600;font-size:.9rem;">Password</div><div style="font-size:.79rem;color:var(--faint);">Change your account password</div></div><a href="{% url 'change_password' %}" class="btn btn-outline btn-sm">Change</a></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--navy-3);border-radius:var(--radius);"><div><div style="font-weight:600;font-size:.9rem;">Withdrawal PIN</div><div style="font-size:.79rem;color:var(--faint);">{% if request.user.withdrawal_pin %}PIN is active{% else %}No PIN set — required for withdrawals{% endif %}</div></div><a href="{% url 'set_pin' %}" class="btn btn-outline btn-sm">{% if request.user.withdrawal_pin %}Change{% else %}Set PIN{% endif %}</a></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-circle-user"></i> Account</div></div>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--navy-3);border-radius:var(--radius);"><div><div style="font-weight:600;font-size:.9rem;">Profile Information</div><div style="font-size:.79rem;color:var(--faint);">Update your name, phone and address</div></div><a href="{% url 'profile' %}" class="btn btn-outline btn-sm">Edit Profile</a></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--navy-3);border-radius:var(--radius);"><div><div style="font-weight:600;font-size:.9rem;">KYC Verification</div><div style="font-size:.79rem;color:var(--faint);">Status: <span class="badge {% if request.user.is_kyc_verified %}badge-success{% else %}badge-warning{% endif %}">{{ request.user.get_kyc_status_display }}</span></div></div><a href="{% url 'profile' %}" class="btn btn-outline btn-sm">View</a></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">🔗 Referral</div></div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Your referral code: <strong style="color:var(--gold);">{{ request.user.referral_code }}</strong></p>
+    <div style="background:var(--navy-3);border-radius:var(--radius);padding:.9rem;display:flex;align-items:center;gap:9px;">
+      <code style="flex:1;font-size:.78rem;color:var(--gold);">{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}</code>
+      <button class="btn btn-outline btn-sm" onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}','Copied!')"><i class="fa-solid fa-copy"></i> Copy</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

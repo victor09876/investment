@@ -54,21 +54,5 @@
   </div>
 </div>
 
-<!-- LEADERBOARD -->
-<div class="card">
-  <div class="card-header"><div class="card-title"><i class="fa-solid fa-ranking-star" style="color:var(--gold);margin-right:8px;"></i>Top Investors Leaderboard</div></div>
-  <div style="display:flex;flex-direction:column;gap:.5rem;">
-  {% for u in leaderboard %}
-  <div class="lb-row">
-    <div class="lb-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% else %}other{% endif %}">#{{ forloop.counter }}</div>
-    <div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ u.initials }}</div>
-    <div style="flex:1;"><div style="font-size:.87rem;font-weight:600;">{{ u.first_name }} {{ u.last_name|slice:":1" }}.</div><div style="font-size:.73rem;color:var(--faint);">{{ u.country|default:"Global" }}</div></div>
-    <div style="text-align:right;"><div style="font-family:var(--ff-d);font-weight:700;color:var(--gold);">${{ u.total|default:0|floatformat:2 }}</div><div style="font-size:.72rem;color:var(--faint);">Total Deposited</div></div>
-    {% if u.id == request.user.id %}<span class="badge badge-gold"><i class="fa-solid fa-user"></i> You</span>{% endif %}
-  </div>
-  {% empty %}
-  <div style="text-align:center;color:var(--faint);padding:2rem;font-size:.87rem;"><i class="fa-solid fa-ranking-star fa-2x" style="margin-bottom:.75rem;opacity:.3;display:block;"></i>No leaderboard data yet.</div>
-  {% endfor %}
-  </div>
-</div>
+
 {% endblock %}

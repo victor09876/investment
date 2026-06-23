@@ -1,0 +1,23 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}App Info{% endblock %}
+{% block page_title %}Application Information{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Application Information</h1><p class="page-subtitle">Overview of application configuration and status</p></div></div>
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-cube"></i></div><div class="s-label">Application Name</div><div class="s-value" style="font-size:1.2rem;">{{ info.application_name }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-code-branch"></i></div><div class="s-label">Version</div><div class="s-value" style="font-size:1.2rem;">v{{ info.version }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:{% if info.environment == 'Production' %}var(--green-bg){% else %}var(--amber-bg){% endif %};color:{% if info.environment == 'Production' %}var(--green){% else %}var(--amber){% endif %};"><i class="fa-solid fa-server"></i></div><div class="s-label">Environment</div><div class="s-value" style="font-size:1.2rem;">{{ info.environment }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-clock"></i></div><div class="s-label">Timezone</div><div class="s-value" style="font-size:1.2rem;">{{ info.timezone }}</div></div>
+</div>
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-dollar-sign"></i></div><div class="s-label">Currency</div><div class="s-value" style="font-size:1.2rem;">{{ info.currency }} ({{ info.currency_symbol }})</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-language"></i></div><div class="s-label">Default Language</div><div class="s-value" style="font-size:1.2rem;">{{ info.language|upper }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:{% if info.maintenance == 'OFF' %}var(--green-bg){% else %}var(--red-bg){% endif %};color:{% if info.maintenance == 'OFF' %}var(--green){% else %}var(--red){% endif %};"><i class="fa-solid fa-screwdriver-wrench"></i></div><div class="s-label">Maintenance</div><div class="s-value" style="font-size:1.2rem;color:{% if info.maintenance == 'OFF' %}var(--green){% else %}var(--red){% endif %};">{{ info.maintenance }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:{% if info.registration == 'ON' %}var(--green-bg){% else %}var(--red-bg){% endif %};color:{% if info.registration == 'ON' %}var(--green){% else %}var(--red){% endif %};"><i class="fa-solid fa-user-plus"></i></div><div class="s-label">Registration</div><div class="s-value" style="font-size:1.2rem;color:{% if info.registration == 'ON' %}var(--green){% else %}var(--red){% endif %};">{{ info.registration }}</div></div>
+</div>
+<div class="card">
+  <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-rocket" style="color:var(--gold);margin-right:8px;"></i>Deployment Information</div>
+  <div class="info-row" style="display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border-s);"><span style="color:var(--muted);">Last Deployment</span><span style="font-weight:600;">{{ info.last_deployment }}</span></div>
+  <div class="info-row" style="display:flex;justify-content:space-between;padding:.75rem 0;"><span style="color:var(--muted);">Application Version</span><span style="font-weight:600;color:var(--gold);">v{{ info.version }}</span></div>
+</div>
+{% endblock %}

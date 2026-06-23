@@ -2,7 +2,7 @@
 {% block title %}Withdrawal PIN{% endblock %}
 {% block page_title %}Withdrawal PIN{% endblock %}
 {% block content %}
-<div style="max-width:440px;">
+<div style="max-width:440px;margin:0 auto;">
   <div class="card">
     <div style="text-align:center;margin-bottom:1.5rem;"><div style="font-size:2.5rem;margin-bottom:.75rem;"><i class="fa-solid fa-key"></i></div><div class="card-title">{% if request.user.withdrawal_pin %}Change{% else %}Set{% endif %} Withdrawal PIN</div><p style="font-size:.84rem;color:var(--muted);margin-top:.5rem;line-height:1.6;">A 4-digit PIN is required for all withdrawal requests to keep your funds safe.</p></div>
     <form method="post">{% csrf_token %}

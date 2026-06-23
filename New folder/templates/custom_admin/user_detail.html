@@ -1,0 +1,185 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}{{ u.full_name }}{% endblock %}
+{% block page_title %}User: {{ u.full_name }}{% endblock %}
+{% block content %}
+<div style="margin-bottom:1.25rem;"><a href="{% url 'admin_users' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Users</a></div>
+<div class="grid-2" style="align-items:start;">
+  <!-- LEFT -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    <!-- PROFILE CARD -->
+    <div class="card card-gold">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+        {% if u.avatar %}<img src="{{ u.avatar.url }}" class="avatar" style="width:60px;height:60px;">{% else %}<div class="avatar-ph" style="width:60px;height:60px;font-size:1.4rem;">{{ u.initials }}</div>{% endif %}
+        <div>
+          <div style="font-family:var(--ff-d);font-size:1.15rem;font-weight:700;">{{ u.full_name }}</div>
+          <div style="font-size:.83rem;color:var(--faint);">{{ u.email }}</div>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="badge {% if u.is_active %}badge-success{% else %}badge-danger{% endif %}"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i> {% if u.is_active %}Active{% else %}Inactive{% endif %}</span>
+            <span class="badge {% if u.is_kyc_verified %}badge-success{% elif u.kyc_status == 'rejected' %}badge-danger{% elif u.kyc_status == 'not_submitted' %}badge-info{% else %}badge-warning{% endif %}"><i class="fa-solid fa-id-card"></i> {{ u.get_kyc_status_display }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Phone</span><span>{% if u.dial_code %}{{ u.dial_code }} {% endif %}{{ u.phone|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Country</span><span>{{ u.country|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">State / Province</span><span>{{ u.state|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Address</span><span style="text-align:right;max-width:180px;">{{ u.address|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Date of Birth</span><span>{{ u.date_of_birth|date:"M d, Y"|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Gender</span><span>{{ u.gender|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Joined</span><span>{{ u.date_joined|date:"M d, Y" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Referral Code</span><span style="color:var(--gold);">{{ u.referral_code }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Referred By</span><span>{{ u.referred_by.email|default:"—" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Total Referrals</span><span>{{ u.referrals.count }}</span></div>
+        <div style="height:1px;background:var(--border-s);"></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Wallet Balance</span><span style="font-weight:700;color:var(--gold);">${{ u.wallet_balance|floatformat:2 }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Profit Balance</span><span style="font-weight:700;color:var(--green);">${{ u.profit_balance|floatformat:2 }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Total Balance</span><span style="font-weight:700;">${{ u.total_balance|floatformat:2 }}</span></div>
+      </div>
+    </div>
+    <!-- QUICK ACTIONS -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-bolt" style="color:var(--gold);margin-right:8px;"></i>Quick Actions</div>
+      <form method="post" style="margin-bottom:.6rem;">{% csrf_token %}<input type="hidden" name="action" value="toggle_active">
+        <button type="submit" class="btn {% if u.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm btn-block">{% if u.is_active %}<i class="fa-solid fa-ban"></i> Deactivate User{% else %}<i class="fa-solid fa-check"></i> Activate User{% endif %}</button>
+      </form>
+      <form method="post" style="margin-bottom:.6rem;">{% csrf_token %}<input type="hidden" name="action" value="login_as">
+        <button type="submit" class="btn btn-outline btn-sm btn-block"><i class="fa-solid fa-right-to-bracket"></i> Login As User</button>
+      </form>
+      <form method="post" style="display:flex;gap:8px;margin-bottom:.6rem;">{% csrf_token %}<input type="hidden" name="action" value="update_kyc">
+        <select name="kyc_status" class="form-control" style="flex:1;"><option value="not_submitted" {% if u.kyc_status == 'not_submitted' %}selected{% endif %}>Not Submitted</option><option value="pending" {% if u.kyc_status == 'pending' %}selected{% endif %}>Pending</option><option value="submitted" {% if u.kyc_status == 'submitted' %}selected{% endif %}>Submitted</option><option value="verified" {% if u.kyc_status == 'verified' %}selected{% endif %}>Verified</option><option value="rejected" {% if u.kyc_status == 'rejected' %}selected{% endif %}>Rejected</option></select>
+        <button type="submit" class="btn btn-outline btn-sm"><i class="fa-solid fa-id-card"></i></button>
+      </form>
+      <form method="post" style="display:flex;gap:8px;">{% csrf_token %}<input type="hidden" name="action" value="reset_password">
+        <input type="password" name="new_password" class="form-control" placeholder="New password (min 8)" style="flex:1;">
+        <button type="submit" class="btn btn-outline btn-sm"><i class="fa-solid fa-key"></i></button>
+      </form>
+    </div>
+    <!-- ADJUST BALANCE -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-sack-dollar" style="color:var(--gold);margin-right:8px;"></i>Adjust Balance</div>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="adjust_balance">
+        <div class="form-group"><label class="form-label">Balance Type</label><select name="bal_type" class="form-control"><option value="wallet">Wallet Balance</option><option value="profit">Profit Balance</option></select></div>
+        <div class="form-group"><label class="form-label">Amount (negative to deduct)</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-dollar-sign"></i></span><input type="number" name="amount" class="form-control" placeholder="e.g. 500 or -100" step="0.01" required></div></div>
+        <div class="form-group"><label class="form-label">Note</label><input type="text" name="note" class="form-control" placeholder="Reason for adjustment"></div>
+        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Apply Adjustment</button>
+      </form>
+    </div>
+    <!-- SEND NOTIFICATION -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-bell" style="color:var(--gold);margin-right:8px;"></i>Send Notification</div>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="send_notification">
+        <div class="form-group"><input type="text" name="notif_title" class="form-control" placeholder="Notification title" required></div>
+        <div class="form-group"><textarea name="notif_body" class="form-control" rows="2" placeholder="Message" required></textarea></div>
+        <button type="submit" class="btn btn-outline btn-block"><i class="fa-solid fa-paper-plane"></i> Send</button>
+      </form>
+    </div>
+  </div>
+  <!-- RIGHT -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    <!-- INVESTMENTS -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--gold);margin-right:8px;"></i>Investments ({{ investments.count }})</div></div>
+      {% if investments %}
+      <div class="table-wrap"><table><thead><tr><th>Plan</th><th>Amount</th><th>Profit</th><th>Status</th><th>Date</th></tr></thead><tbody>
+      {% for inv in investments %}
+      <tr><td>{{ inv.plan.name }}</td><td style="color:var(--gold);font-weight:600;">${{ inv.amount|floatformat:2 }}</td><td style="color:var(--green);">${{ inv.profit_earned|floatformat:2 }}</td><td><span class="badge {% if inv.status == 'active' %}badge-success{% elif inv.status == 'completed' %}badge-info{% else %}badge-danger{% endif %}">{{ inv.get_status_display }}</span></td><td style="font-size:.79rem;color:var(--faint);">{{ inv.start_date|date:"M d, Y" }}</td></tr>
+      {% endfor %}
+      </tbody></table></div>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No investments yet.</div>{% endif %}
+    </div>
+    <!-- TRANSACTIONS -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-receipt" style="color:var(--gold);margin-right:8px;"></i>Recent Transactions</div></div>
+      {% if transactions %}
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+      {% for t in transactions|slice:":10" %}
+      <tr><td><code style="font-size:.77rem;">#{{ t.txn_id }}</code></td><td><span class="badge badge-gold" style="font-size:.67rem;">{{ t.get_type_display }}</span></td><td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">${{ t.amount|floatformat:2 }}</td><td><span class="badge {{ t.status_class }}" style="font-size:.67rem;">{{ t.get_status_display }}</span></td><td style="font-size:.78rem;color:var(--faint);">{{ t.created_at|date:"M d H:i" }}</td></tr>
+      {% endfor %}
+      </tbody></table></div>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No transactions.</div>{% endif %}
+    </div>
+    <!-- LOGIN HISTORY -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-shield-halved" style="color:var(--gold);margin-right:8px;"></i>Login History &amp; Security</div></div>
+      {% if login_hist %}
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Browser</th><th>OS</th><th>Device</th><th>IP</th><th>Status</th></tr></thead><tbody>
+      {% for h in login_hist|slice:":10" %}
+      <tr>
+        <td style="font-size:.79rem;color:var(--faint);">{{ h.created_at|date:"M d, H:i" }}</td>
+        <td>{{ h.browser }}</td>
+        <td>{{ h.os }}</td>
+        <td>{% if h.device_type == 'mobile' %}<i class="fa-solid fa-mobile-screen-button"></i>{% elif h.device_type == 'tablet' %}<i class="fa-solid fa-tablet-screen-button"></i>{% else %}<i class="fa-solid fa-desktop"></i>{% endif %} {{ h.device }}</td>
+        <td><code style="font-size:.77rem;color:var(--gold);">{{ h.ip_address }}</code></td>
+        <td><span class="badge {% if h.status == 'success' %}badge-success{% else %}badge-danger{% endif %}">{{ h.get_status_display }}</span>{% if h.is_new_device %}<span class="badge badge-warning" style="margin-left:4px;">New</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody></table></div>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No login history.</div>{% endif %}
+    </div>
+    <!-- KYC -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-id-card" style="color:var(--gold);margin-right:8px;"></i>KYC Details</div></div>
+      {% if kyc_sub %}
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;margin-bottom:1.1rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Status</span><span class="badge {% if kyc_sub.status == 'approved' %}badge-success{% elif kyc_sub.status == 'rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{ kyc_sub.get_status_display }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Submitted</span><span>{{ kyc_sub.submitted_at|date:"M d, Y H:i" }}</span></div>
+        {% if kyc_sub.reviewed_at %}<div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Reviewed</span><span>{{ kyc_sub.reviewed_at|date:"M d, Y" }} by {{ kyc_sub.reviewed_by.full_name|default:"—" }}</span></div>{% endif %}
+        {% if kyc_sub.admin_note %}<div style="margin-top:.5rem;padding:.75rem;background:var(--navy-3);border-radius:var(--radius);font-size:.83rem;"><strong>Note:</strong> {{ kyc_sub.admin_note }}</div>{% endif %}
+      </div>
+
+      {% if kyc_answers %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.6rem;margin-bottom:1.1rem;">
+        {% for ans in kyc_answers %}
+        <div style="padding:.65rem .8rem;background:var(--navy-3);border-radius:var(--radius);">
+          <div style="font-size:.71rem;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">{{ ans.field.label }}</div>
+          {% if ans.field.field_type in 'file,image' %}
+            {% if ans.file_value %}<a href="{{ ans.file_value.url }}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.74rem;padding:4px 10px;"><i class="fa-solid fa-paperclip"></i> View File</a>{% else %}<span style="color:var(--faint);font-size:.83rem;">—</span>{% endif %}
+          {% else %}
+            <div style="font-weight:600;font-size:.86rem;word-break:break-word;">{{ ans.value|default:"—" }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if kyc_sub.status == 'pending' %}
+      <form method="post" style="display:flex;gap:8px;margin-bottom:.5rem;">{% csrf_token %}<input type="hidden" name="action" value="review_kyc">
+        <input type="text" name="kyc_note" class="form-control" placeholder="Optional note (sent to user)" style="flex:1;">
+        <button type="submit" name="kyc_decision" value="approved" class="btn btn-success btn-sm"><i class="fa-solid fa-check"></i> Approve</button>
+        <button type="submit" name="kyc_decision" value="rejected" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark"></i> Reject</button>
+      </form>
+      {% endif %}
+      <a href="{% url 'admin_kyc' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-right"></i> Open KYC Manager</a>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No KYC submission yet.</div>{% endif %}
+    </div>
+    <!-- TICKETS -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-headset" style="color:var(--gold);margin-right:8px;"></i>Support Tickets</div></div>
+      {% if tickets %}
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+      {% for t in tickets|slice:":5" %}
+      <a href="{% url 'admin_ticket_detail' t.id %}" style="display:flex;justify-content:space-between;align-items:center;padding:.7rem;background:var(--navy-3);border-radius:var(--radius);">
+        <div><span style="font-size:.85rem;font-weight:600;">{{ t.subject|truncatechars:35 }}</span><div style="font-size:.74rem;color:var(--faint);">#{{ t.ticket_id }} &middot; {{ t.created_at|date:"M d, Y" }}</div></div>
+        <span class="badge {% if t.status == 'open' %}badge-success{% elif t.status == 'pending' %}badge-warning{% else %}badge-info{% endif %}">{{ t.get_status_display }}</span>
+      </a>
+      {% endfor %}
+      </div>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No tickets.</div>{% endif %}
+    </div>
+    <!-- NOTIFICATIONS -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-bell" style="color:var(--gold);margin-right:8px;"></i>Recent Notifications</div></div>
+      {% if notifs %}
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+      {% for n in notifs|slice:":5" %}
+      <div style="padding:.6rem .75rem;background:var(--navy-3);border-radius:var(--radius);">
+        <div style="font-size:.84rem;font-weight:600;">{{ n.title }}</div>
+        <div style="font-size:.76rem;color:var(--faint);">{{ n.body|truncatechars:60 }} &middot; {{ n.created_at|date:"M d, H:i" }}</div>
+      </div>
+      {% endfor %}
+      </div>
+      {% else %}<div style="color:var(--faint);font-size:.85rem;text-align:center;padding:1rem;">No notifications.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

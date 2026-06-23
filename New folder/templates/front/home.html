@@ -1,0 +1,138 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ page.title|default:"Home" }}{% endblock %}
+{% block meta_desc %}{{ page.meta_desc|default:"Smart, secure, and rewarding investment plans." }}{% endblock %}
+{% block content %}
+<!-- HERO -->
+<section class="front-hero">
+  <div style="max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:3rem;align-items:center;position:relative;z-index:1;">
+    <div>
+      <span class="badge badge-gold" style="font-size:.75rem;margin-bottom:1.25rem;display:inline-flex;"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i> Trusted by {{ stats.total_users }}+ investors</span>
+      <h1 style="font-family:var(--ff-d);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:1.25rem;">
+        {{ page.title|default:"Grow Your Wealth With Confidence" }}
+      </h1>
+      <p style="color:var(--muted);font-size:1.05rem;line-height:1.8;max-width:520px;margin-bottom:2rem;">
+        {{ page.subtitle|default:"Join a transparent, secure investment platform built for real returns. Choose a plan, track your earnings in real time, and withdraw whenever you're ready." }}
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-rocket"></i> Start Investing</a>
+        <a href="{% url 'front_how_it_works' %}" class="btn btn-outline btn-lg"><i class="fa-solid fa-circle-play"></i> How It Works</a>
+      </div>
+      <div style="display:flex;gap:2.5rem;margin-top:3rem;flex-wrap:wrap;">
+        <div><div style="font-family:var(--ff-m);font-size:1.6rem;font-weight:700;color:var(--teal);">${{ stats.total_invested|floatformat:0 }}</div><div style="font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Total Invested</div></div>
+        <div><div style="font-family:var(--ff-m);font-size:1.6rem;font-weight:700;color:var(--teal);">{{ stats.total_users }}+</div><div style="font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Active Investors</div></div>
+        <div><div style="font-family:var(--ff-m);font-size:1.6rem;font-weight:700;color:var(--teal);">{{ stats.total_plans }}</div><div style="font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Investment Plans</div></div>
+      </div>
+    </div>
+    <div style="position:relative;">
+      {% if page.hero_image %}
+      <img src="{{ page.hero_image.url }}" alt="{{ page.title }}" style="width:100%;border-radius:var(--radius-xl);border:1px solid var(--border-s);">
+      {% else %}
+      <div class="card" style="padding:2rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+          <div><div style="font-size:.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;">Portfolio Value</div><div style="font-family:var(--ff-m);font-size:2rem;font-weight:700;color:var(--teal);">$48,290.00</div></div>
+          <div class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> +12.4%</div>
+        </div>
+        <div id="home-hero-chart" style="height:160px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:1.5rem;">
+          <div style="text-align:center;padding:.75rem;background:var(--elevated);border-radius:var(--radius);"><div style="font-family:var(--ff-m);font-weight:700;color:var(--green);">+2.5%</div><div style="font-size:.68rem;color:var(--faint);">Daily ROI</div></div>
+          <div style="text-align:center;padding:.75rem;background:var(--elevated);border-radius:var(--radius);"><div style="font-family:var(--ff-m);font-weight:700;">90 Days</div><div style="font-size:.68rem;color:var(--faint);">Duration</div></div>
+          <div style="text-align:center;padding:.75rem;background:var(--elevated);border-radius:var(--radius);"><div style="font-family:var(--ff-m);font-weight:700;color:var(--teal);">Instant</div><div style="font-size:.68rem;color:var(--faint);">Withdrawals</div></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<section style="padding:2rem;border-top:1px solid var(--border-s);border-bottom:1px solid var(--border-s);background:var(--surface);">
+  <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-around;flex-wrap:wrap;gap:1.5rem;text-align:center;">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;"><i class="fa-solid fa-shield-halved" style="color:var(--teal);font-size:1.1rem;"></i> Bank-Level Security</div>
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;"><i class="fa-solid fa-bolt" style="color:var(--teal);font-size:1.1rem;"></i> Instant Withdrawals</div>
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;"><i class="fa-solid fa-chart-line" style="color:var(--teal);font-size:1.1rem;"></i> Daily ROI Payouts</div>
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;"><i class="fa-solid fa-headset" style="color:var(--teal);font-size:1.1rem;"></i> 24/7 Support</div>
+  </div>
+</section>
+
+<!-- PLANS PREVIEW -->
+<section class="front-section">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <h2 class="front-section-title">Investment Plans Built To Perform</h2>
+      <p class="front-section-sub" style="margin:0 auto;">Choose a plan that fits your goals — every plan pays daily returns straight into your wallet.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;">
+      {% for plan in plans %}
+      <div class="front-plan-card {% if plan.is_featured %}featured{% endif %}">
+        {% if plan.is_featured %}<span class="badge badge-gold" style="margin-bottom:1rem;display:inline-flex;">Most Popular</span>{% endif %}
+        <div class="plan-icon"><i class="fa-solid fa-{{ plan.fa_icon }}"></i></div>
+        <h3 style="font-family:var(--ff-d);font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">{{ plan.name }}</h3>
+        <div class="plan-rate">{{ plan.daily_roi }}%</div>
+        <div class="plan-period">Daily for {{ plan.duration_days }} days</div>
+        <div class="plan-range">${{ plan.min_amount|floatformat:0 }}{% if plan.max_amount %} – ${{ plan.max_amount|floatformat:0 }}{% else %}+{% endif %}</div>
+        <a href="{% url 'register' %}" class="btn btn-outline btn-block" style="margin-top:1rem;">Get Started</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US -->
+<section class="front-section" style="background:var(--surface);border-top:1px solid var(--border-s);border-bottom:1px solid var(--border-s);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <h2 class="front-section-title">Why Investors Choose Us</h2>
+      <p class="front-section-sub" style="margin:0 auto;">Everything you need for a transparent, hands-off investing experience.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;">
+      <div class="card"><div class="plan-icon"><i class="fa-solid fa-shield-halved"></i></div><h3 style="font-family:var(--ff-d);font-size:1rem;margin-bottom:.5rem;">Secure by Design</h3><p style="color:var(--muted);font-size:.85rem;line-height:1.7;">Your funds and data are protected with industry-standard encryption and account safeguards.</p></div>
+      <div class="card"><div class="plan-icon"><i class="fa-solid fa-bolt"></i></div><h3 style="font-family:var(--ff-d);font-size:1rem;margin-bottom:.5rem;">Fast Payouts</h3><p style="color:var(--muted);font-size:.85rem;line-height:1.7;">Daily ROI is credited automatically. Withdraw your profit or wallet balance whenever you like.</p></div>
+      <div class="card"><div class="plan-icon"><i class="fa-solid fa-users"></i></div><h3 style="font-family:var(--ff-d);font-size:1rem;margin-bottom:.5rem;">Referral Rewards</h3><p style="color:var(--muted);font-size:.85rem;line-height:1.7;">Invite friends and earn a bonus on their investments and deposits.</p></div>
+      <div class="card"><div class="plan-icon"><i class="fa-solid fa-headset"></i></div><h3 style="font-family:var(--ff-d);font-size:1rem;margin-bottom:.5rem;">Real Human Support</h3><p style="color:var(--muted);font-size:.85rem;line-height:1.7;">Our support team is on hand to help with anything, from KYC to withdrawals.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG PREVIEW -->
+{% if posts %}
+<section class="front-section">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+      <h2 class="front-section-title" style="margin-bottom:0;">Latest From Our Blog</h2>
+      <a href="{% url 'front_blog' %}" class="btn btn-outline btn-sm">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;">
+      {% for post in posts %}
+      <a href="{% url 'front_blog_detail' post.slug %}" class="card" style="padding:0;overflow:hidden;text-decoration:none;">
+        {% if post.cover_image %}<img src="{{ post.cover_image.url }}" alt="{{ post.title }}" style="width:100%;height:160px;object-fit:cover;">{% else %}<div style="width:100%;height:160px;background:var(--elevated);display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:2rem;"><i class="fa-solid fa-newspaper"></i></div>{% endif %}
+        <div style="padding:1.25rem;">
+          {% if post.category %}<span class="badge badge-gold" style="margin-bottom:.6rem;">{{ post.category }}</span>{% endif %}
+          <h3 style="font-family:var(--ff-d);font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--text);">{{ post.title|truncatechars:55 }}</h3>
+          <p style="color:var(--muted);font-size:.83rem;line-height:1.6;">{{ post.excerpt|truncatechars:90 }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="front-section" style="text-align:center;background:linear-gradient(180deg,var(--surface),var(--bg));border-top:1px solid var(--border-s);">
+  <div style="max-width:640px;margin:0 auto;">
+    <h2 class="front-section-title">Ready to start growing your money?</h2>
+    <p class="front-section-sub" style="margin:0 auto 1.5rem;">Create a free account in minutes and make your first deposit today.</p>
+    <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-rocket"></i> Create Free Account</a>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  drawBarChart('home-hero-chart', [
+    {value:32000,label:'Jan'},{value:35500,label:'Feb'},{value:38200,label:'Mar'},
+    {value:41000,label:'Apr'},{value:44800,label:'May'},{value:48290,label:'Jun'}
+  ]);
+});
+</script>
+{% endblock %}

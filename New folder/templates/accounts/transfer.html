@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+{% block title %}Transfer Balance{% endblock %}
+{% block page_title %}Transfer Balance{% endblock %}
+{% block content %}
+<div class="transfer-card">
+  <div class="card" style="margin-bottom:1.4rem;">
+    <div class="card-title" style="margin-bottom:.5rem;"><i class="fa-solid fa-right-left" style="color:var(--gold);margin-right:8px;"></i>Send Funds</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:1.4rem;">Transfer funds from your wallet to another user. Transfer by email or referral code.</p>
+    <div class="alert alert-info" style="margin-bottom:1.25rem;"><i class="fa-solid fa-circle-info"></i> Available Balance: <strong style="color:var(--gold);">${{ request.user.wallet_balance|floatformat:2 }}</strong>{% if settings.transfer_fee_pct > 0 %} &nbsp;·&nbsp; Fee: <strong>{{ settings.transfer_fee_pct }}%</strong>{% else %} &nbsp;·&nbsp; <strong style="color:var(--green);">No Fee</strong>{% endif %}</div>
+    <form method="post" id="transfer-form">{% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Recipient Email or Referral Code</label>
+        <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-at"></i></span><input type="text" name="recipient" class="form-control" placeholder="email@example.com or REFCODE" required></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (USD)</label>
+        <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-dollar-sign"></i></span><input type="number" name="amount" id="tr-amount" class="form-control" placeholder="0.00" min="1" step="0.01" max="{{ request.user.wallet_balance }}" required oninput="updateTransferPreview()"></div>
+        <p class="form-hint">Maximum: ${{ request.user.wallet_balance|floatformat:2 }}</p>
+      </div>
+      {% if settings.transfer_fee_pct > 0 %}
+      <div style="background:var(--navy-3);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;font-size:.86rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:7px;"><span style="color:var(--muted);">Amount</span><span id="tr-amount-display">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:7px;"><span style="color:var(--muted);">Fee ({{ settings.transfer_fee_pct }}%)</span><span id="tr-fee" style="color:var(--red);">$0.00</span></div>
+        <div style="height:1px;background:var(--border-s);margin-bottom:7px;"></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;"><span>Total Deducted</span><span id="tr-total" style="color:var(--gold);">$0.00</span></div>
+      </div>
+      {% endif %}
+      <button type="button" class="btn btn-primary btn-block btn-lg" onclick="openModal('confirm-transfer-modal')"><i class="fa-solid fa-paper-plane"></i> Send Transfer</button>
+    </form>
+  </div>
+
+  {% if recent %}
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--gold);margin-right:8px;"></i>Recent Transfers</div></div>
+    {% for t in recent %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--navy-3);border-radius:var(--radius);margin-bottom:.6rem;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar-ph" style="width:32px;height:32px;font-size:.76rem;">{{ t.recipient.initials }}</div>
+        <div><div style="font-size:.86rem;font-weight:600;">{{ t.recipient.full_name }}</div><div style="font-size:.74rem;color:var(--faint);">{{ t.created_at|date:"M d, Y H:i" }}</div></div>
+      </div>
+      <div style="text-align:right;"><div style="font-weight:700;color:var(--red);">-${{ t.amount|floatformat:2 }}</div>{% if t.fee > 0 %}<div style="font-size:.72rem;color:var(--faint);">Fee: ${{ t.fee|floatformat:2 }}</div>{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay confirm-modal" id="confirm-transfer-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header"><div class="modal-title">Confirm Transfer</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-right-left"></i></div>
+      <h3>Send Transfer?</h3>
+      <p>You are about to send funds to the specified recipient. This action cannot be undone.</p>
+    </div>
+    <div style="display:flex;gap:9px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal('confirm-transfer-modal')"><i class="fa-solid fa-xmark"></i> Cancel</button><button class="btn btn-primary" style="flex:2;" onclick="document.getElementById('transfer-form').submit()"><i class="fa-solid fa-paper-plane"></i> Confirm Send</button></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function updateTransferPreview(){
+  const amt = parseFloat(document.getElementById('tr-amount')?.value)||0;
+  const fee = amt * {{ settings.transfer_fee_pct|default:0 }}/100;
+  const fmt = n => '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ad = document.getElementById('tr-amount-display');
+  const tf = document.getElementById('tr-fee');
+  const tt = document.getElementById('tr-total');
+  if(ad) ad.textContent = fmt(amt);
+  if(tf) tf.textContent = fmt(fee);
+  if(tt) tt.textContent = fmt(amt+fee);
+}
+</script>
+{% endblock %}

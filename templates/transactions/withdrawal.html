@@ -2,7 +2,7 @@
 {% block title %}Withdrawal{% endblock %}
 {% block page_title %}Withdraw Funds{% endblock %}
 {% block content %}
-<div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;">
+<div>
   <!-- LEFT -->
   <div>
     <!-- BALANCE BARS -->
@@ -94,7 +94,7 @@
       {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:.75rem;">No withdrawals yet.</div>{% endfor %}
     </div>
     <div class="card">
-      <div style="font-size:.83rem;font-weight:600;margin-bottom:9px;"><i class="fa-solid fa-copy"></i> Withdrawal Policy</div>
+      <div style="font-size:.83rem;font-weight:600;margin-bottom:9px;"><i class="fa-solid fa-copy"></i>&nbsp; Withdrawal Policy</div>
       <div style="font-size:.79rem;color:var(--faint);display:flex;flex-direction:column;gap:6px;line-height:1.6;">
         <div><i class="fa-solid fa-check"></i> Minimum: <strong style="color:var(--muted);">${{ settings.min_withdrawal|floatformat:2 }}</strong></div>
         <div><i class="fa-solid fa-check"></i> Fee: <strong style="color:var(--muted);">{% if settings.withdrawal_fee_pct > 0 %}{{ settings.withdrawal_fee_pct }}%{% else %}None{% endif %}</strong></div>

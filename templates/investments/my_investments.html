@@ -11,9 +11,9 @@
 </div>
 <div class="tabs-wrap">
   <div class="tabs" style="max-width:420px;margin-bottom:1.5rem;">
-    <button class="tab-btn {% if tab == 'active' %}active{% endif %}" data-tab="active"><i class="fa-solid fa-rotate"></i> Running ({{ active.count }})</button>
-    <button class="tab-btn {% if tab == 'completed' %}active{% endif %}" data-tab="completed"><i class="fa-solid fa-circle-check"></i> Done ({{ completed.count }})</button>
-    <button class="tab-btn {% if tab == 'cancelled' %}active{% endif %}" data-tab="cancelled"><i class="fa-solid fa-xmark"></i> Cancelled ({{ cancelled.count }})</button>
+    <button class="tab-btn {% if tab == 'active' %}active{% endif %}" data-tab="active"><i class="fa-solid fa-rotate"></i>&nbsp; Running ({{ active.count }})</button>
+    <button class="tab-btn {% if tab == 'completed' %}active{% endif %}" data-tab="completed"><i class="fa-solid fa-circle-check"></i>&nbsp; Done ({{ completed.count }})</button>
+    <button class="tab-btn {% if tab == 'cancelled' %}active{% endif %}" data-tab="cancelled"><i class="fa-solid fa-xmark"></i>&nbsp; Cancelled ({{ cancelled.count }})</button>
   </div>
   <!-- ACTIVE -->
   <div id="tab-active" class="tab-panel" {% if tab != 'active' %}style="display:none;"{% endif %}>
@@ -22,7 +22,7 @@
     {% for inv in active %}
     <div class="invest-card">
       <div class="invest-card-top">
-        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</div><div class="invest-detail">#{{ inv.id|stringformat:"s"|slice:":8" |upper }} · Started {{ inv.start_date|date:"M d, Y" }}</div></div>
+        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i>&nbsp;&nbsp; {{ inv.plan.name }}</div><div class="invest-detail">#{{ inv.id|stringformat:"s"|slice:":8" |upper }} · Started {{ inv.start_date|date:"M d, Y" }}</div></div>
         <div style="text-align:right;"><div class="invest-amount">${{ inv.amount|floatformat:2 }}</div><span class="badge badge-success" style="margin-top:4px;">Active</span></div>
       </div>
       <div style="margin:1rem 0 .5rem;"><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--faint);margin-bottom:6px;"><span>{{ inv.progress_pct }}% complete</span><span>Ends {{ inv.end_date|date:"M d, Y" }} · {{ inv.days_remaining }} days left</span></div><div class="progress"><div class="progress-bar" data-progress="{{ inv.progress_pct }}" style="width:0;"></div></div></div>
@@ -59,14 +59,14 @@
   <!-- COMPLETED -->
   <div id="tab-completed" class="tab-panel" {% if tab != 'completed' %}style="display:none;"{% endif %}>
     {% if completed %}<div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Plan</th><th>Invested</th><th>Profit</th><th>Total</th><th>Duration</th><th>Completed</th></tr></thead><tbody>
-    {% for inv in completed %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--green);font-weight:600;">+${{ inv.profit_earned|floatformat:2 }}</td><td style="font-weight:700;color:var(--gold);">${{ inv.expected_total|floatformat:2 }}</td><td>{{ inv.plan.duration_days }} days</td><td>{{ inv.end_date|date:"M d, Y" }}</td></tr>{% endfor %}
+    {% for inv in completed %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i>&nbsp; {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--green);font-weight:600;">+${{ inv.profit_earned|floatformat:2 }}</td><td style="font-weight:700;color:var(--gold);">${{ inv.expected_total|floatformat:2 }}</td><td>{{ inv.plan.duration_days }} days</td><td>{{ inv.end_date|date:"M d, Y" }}</td></tr>{% endfor %}
     </tbody></table></div></div>
     {% else %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-circle-check"></i></div><div class="empty-state-title">No completed investments yet</div></div>{% endif %}
   </div>
   <!-- CANCELLED -->
   <div id="tab-cancelled" class="tab-panel" {% if tab != 'cancelled' %}style="display:none;"{% endif %}>
     {% if cancelled %}<div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Plan</th><th>Invested</th><th>Fee</th><th>Refunded</th><th>Cancelled</th></tr></thead><tbody>
-    {% for inv in cancelled %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--red);">-5%</td><td style="color:var(--green);font-weight:600;">${{ inv.amount|floatformat:2 }}</td><td>{{ inv.updated_at|date:"M d, Y" }}</td></tr>{% endfor %}
+    {% for inv in cancelled %}<tr><td>#{{ inv.id|stringformat:"s"|slice:":8"|upper }}</td><td><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i>&nbsp; {{ inv.plan.name }}</td><td>${{ inv.amount|floatformat:2 }}</td><td style="color:var(--red);">-5%</td><td style="color:var(--green);font-weight:600;">${{ inv.amount|floatformat:2 }}</td><td>{{ inv.updated_at|date:"M d, Y" }}</td></tr>{% endfor %}
     </tbody></table></div></div>
     {% else %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-xmark"></i></div><div class="empty-state-title">No cancelled investments</div></div>{% endif %}
   </div>

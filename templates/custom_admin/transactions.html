@@ -13,7 +13,7 @@
 <!-- QUICK APPROVE PENDING -->
 {% if pending_dep or pending_wth %}
 <div class="card" style="margin-bottom:1.25rem;border-color:rgba(240,165,0,.2);background:rgba(240,165,0,.03);">
-  <div class="card-title" style="margin-bottom:1rem;color:var(--amber);">⏳ Pending Actions Required</div>
+  <div class="card-title" style="margin-bottom:1rem;color:var(--amber);">⏳&nbsp; Pending Actions Required</div>
   <form method="post" id="bulk-form">{% csrf_token %}
     <div class="table-wrap"><table>
       <thead><tr><th style="width:36px;"><input type="checkbox" id="check-all" style="accent-color:var(--gold);"></th><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Proof</th><th>Date</th></tr></thead>

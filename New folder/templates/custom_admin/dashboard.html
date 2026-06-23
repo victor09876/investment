@@ -1,0 +1,125 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+<!-- KPI STATS ROW 1 -->
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-users"></i></div><div class="s-label">Total Users</div><div class="s-value" data-count="{{ stats.total_users }}" data-dec="0">0</div><div class="s-change up"><i class="fa-solid fa-arrow-up"></i> +{{ stats.new_users_week }} this week</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-arrow-down-to-bracket"></i></div><div class="s-label">Total Deposited</div><div class="s-value" data-count="{{ stats.total_deposited }}" data-prefix="$" data-dec="2">$0</div><div class="s-change up"><i class="fa-solid fa-chart-line"></i> All time</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--red-bg);color:var(--red);"><i class="fa-solid fa-arrow-up-from-bracket"></i></div><div class="s-label">Total Withdrawn</div><div class="s-value" data-count="{{ stats.total_withdrawn }}" data-prefix="$" data-dec="2">$0</div><div class="s-change flat"><i class="fa-solid fa-minus"></i> All time</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-sack-dollar"></i></div><div class="s-label">Platform Profit</div><div class="s-value" style="color:var(--gold);" data-count="{{ stats.platform_profit }}" data-prefix="$" data-dec="2">$0</div><div class="s-change up"><i class="fa-solid fa-arrow-trend-up"></i> Net position</div></div>
+</div>
+<!-- KPI STATS ROW 2 -->
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card" style="{% if stats.pending_deposits %}border-color:rgba(240,165,0,.3);{% endif %}"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-hourglass-half"></i></div><div class="s-label">Pending Deposits</div><div class="s-value">{{ stats.pending_deposits }}</div><a href="{% url 'admin_transactions' %}?type=deposit&status=pending" style="font-size:.76rem;color:var(--amber);margin-top:4px;display:block;"><i class="fa-solid fa-arrow-right"></i> Review</a></div>
+  <div class="stat-card" style="{% if stats.pending_withdrawals %}border-color:rgba(232,92,92,.25);{% endif %}"><div class="icon-wrap" style="background:var(--red-bg);color:var(--red);"><i class="fa-solid fa-money-bill-transfer"></i></div><div class="s-label">Pending Withdrawals</div><div class="s-value">{{ stats.pending_withdrawals }}</div><a href="{% url 'admin_transactions' %}?type=withdrawal&status=processing" style="font-size:.76rem;color:var(--red);margin-top:4px;display:block;"><i class="fa-solid fa-arrow-right"></i> Review</a></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-rotate"></i></div><div class="s-label">Active Investments</div><div class="s-value">{{ stats.active_investments }}</div><div class="s-change flat"><i class="fa-solid fa-dollar-sign"></i> ${{ stats.total_invested|floatformat:0 }} invested</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-coins"></i></div><div class="s-label">Today's ROI</div><div class="s-value" style="color:var(--green);">${{ stats.today_roi|floatformat:2 }}</div><div class="s-change up"><i class="fa-solid fa-check"></i> Paid today</div></div>
+</div>
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-headset"></i></div><div class="s-label">Open Tickets</div><div class="s-value">{{ stats.open_tickets }}</div><a href="{% url 'admin_tickets' %}" style="font-size:.76rem;color:var(--amber);margin-top:4px;display:block;"><i class="fa-solid fa-arrow-right"></i> View</a></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-id-card"></i></div><div class="s-label">Pending KYC</div><div class="s-value">{{ stats.pending_kyc }}</div><a href="{% url 'admin_kyc' %}" style="font-size:.76rem;color:var(--blue);margin-top:4px;display:block;"><i class="fa-solid fa-arrow-right"></i> Review</a></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-user-check"></i></div><div class="s-label">Active Users</div><div class="s-value">{{ stats.active_users }}</div><div class="s-change flat"><i class="fa-solid fa-users"></i> of {{ stats.total_users }} total</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--border-s);color:var(--muted);"><i class="fa-solid fa-calendar-day"></i></div><div class="s-label">New Users Today</div><div class="s-value">{{ stats.new_users_week }}</div><div class="s-change flat">This week</div></div>
+</div>
+<!-- PENDING ALERT -->
+{% if stats.pending_deposits or stats.pending_withdrawals %}
+<div class="alert alert-warning" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+  <div><i class="fa-solid fa-triangle-exclamation fa-lg" style="margin-right:8px;"></i><strong>Action Required:</strong> {{ stats.pending_deposits }} deposit(s) and {{ stats.pending_withdrawals }} withdrawal(s) awaiting approval.</div>
+  <a href="{% url 'admin_transactions' %}?status=pending" class="btn btn-warning btn-sm"><i class="fa-solid fa-arrow-right"></i> Review Now</a>
+</div>
+{% endif %}
+<!-- CHARTS + RECENT -->
+<div class="grid-2" style="margin-bottom:1.5rem;">
+  <div class="card">
+    <div class="card-header"><div><div class="card-title"><i class="fa-solid fa-chart-bar" style="color:var(--gold);margin-right:8px;"></i>Monthly Activity</div><div class="card-subtitle">Deposits vs Withdrawals (6 months)</div></div></div>
+    <div id="admin-chart" style="height:240px;margin-bottom:.75rem;"></div>
+    <div style="display:flex;gap:1.25rem;font-size:.79rem;padding-top:.75rem;border-top:1px solid var(--border-s);">
+      <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--gold);"></div><span style="color:var(--muted);">Deposits</span></div>
+      <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue);"></div><span style="color:var(--muted);">Withdrawals</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-user-plus" style="color:var(--gold);margin-right:8px;"></i>Recent Users</div><a href="{% url 'admin_users' %}" class="btn btn-ghost btn-sm">View All <i class="fa-solid fa-arrow-right"></i></a></div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+    {% for u in recent_users %}
+    <a href="{% url 'admin_user_detail' u.id %}" style="display:flex;align-items:center;gap:9px;padding:.6rem;background:var(--navy-3);border-radius:var(--radius);transition:background .15s;" onmouseenter="this.style.background='var(--navy-4)'" onmouseleave="this.style.background='var(--navy-3)'">
+      <div class="avatar-ph" style="width:30px;height:30px;font-size:.71rem;">{{ u.initials }}</div>
+      <div style="flex:1;min-width:0;"><div style="font-size:.84rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.full_name }}</div><div style="font-size:.72rem;color:var(--faint);">{{ u.email|truncatechars:28 }}</div></div>
+      <div style="text-align:right;flex-shrink:0;"><div style="font-size:.8rem;font-weight:600;color:var(--gold);">${{ u.wallet_balance|floatformat:2 }}</div><div style="font-size:.7rem;color:var(--faint);">{{ u.date_joined|date:"M d" }}</div></div>
+    </a>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+<!-- LOGIN ANALYTICS PREVIEW -->
+<div class="grid-3" style="margin-bottom:1.5rem;">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-brands fa-chrome" style="color:var(--gold);margin-right:8px;"></i>Top Browsers</div><a href="{% url 'admin_login_analytics' %}" class="btn btn-ghost btn-sm">Full <i class="fa-solid fa-arrow-right"></i></a></div>
+    {% for b in by_browser|slice:":5" %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;{% if not forloop.last %}border-bottom:1px solid rgba(255,255,255,.04);{% endif %}">
+      <span style="font-size:.84rem;color:var(--muted);">
+        {% if 'Chrome' in b.browser %}<i class="fa-brands fa-chrome" style="color:#4285F4;width:18px;"></i>{% elif 'Firefox' in b.browser %}<i class="fa-brands fa-firefox-browser" style="color:#FF7139;width:18px;"></i>{% elif 'Safari' in b.browser %}<i class="fa-brands fa-safari" style="color:#006CFF;width:18px;"></i>{% elif 'Edge' in b.browser %}<i class="fa-brands fa-edge" style="color:#0078D7;width:18px;"></i>{% else %}<i class="fa-solid fa-globe" style="width:18px;"></i>{% endif %}
+        {{ b.browser|default:"Unknown" }}
+      </span>
+      <span class="badge badge-gold">{{ b.count }}</span>
+    </div>
+    {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:1rem;">No data yet</div>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-brands fa-windows" style="color:var(--gold);margin-right:8px;"></i>Top OS</div></div>
+    {% for o in by_os|slice:":5" %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;{% if not forloop.last %}border-bottom:1px solid rgba(255,255,255,.04);{% endif %}">
+      <span style="font-size:.84rem;color:var(--muted);">
+        {% if 'Windows' in o.os %}<i class="fa-brands fa-windows" style="color:#00A4EF;width:18px;"></i>{% elif 'Mac' in o.os or 'iOS' in o.os %}<i class="fa-brands fa-apple" style="width:18px;"></i>{% elif 'Android' in o.os %}<i class="fa-brands fa-android" style="color:#3DDC84;width:18px;"></i>{% elif 'Linux' in o.os %}<i class="fa-brands fa-linux" style="width:18px;"></i>{% else %}<i class="fa-solid fa-desktop" style="width:18px;"></i>{% endif %}
+        {{ o.os|default:"Unknown" }}
+      </span>
+      <span class="badge badge-gold">{{ o.count }}</span>
+    </div>
+    {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:1rem;">No data yet</div>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-earth-americas" style="color:var(--gold);margin-right:8px;"></i>Top Countries</div></div>
+    {% for c in by_country|slice:":5" %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;{% if not forloop.last %}border-bottom:1px solid rgba(255,255,255,.04);{% endif %}">
+      <span style="font-size:.84rem;color:var(--muted);"><i class="fa-solid fa-location-dot" style="color:var(--faint);width:18px;"></i>{{ c.country|default:"Unknown" }}</span>
+      <div style="text-align:right;"><span class="badge badge-gold">{{ c.count }}</span><span style="font-size:.73rem;color:var(--faint);margin-left:5px;">{{ c.pct }}%</span></div>
+    </div>
+    {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:1rem;">No data yet</div>{% endfor %}
+  </div>
+</div>
+<!-- RECENT TRANSACTIONS -->
+<div class="card">
+  <div class="card-header"><div><div class="card-title"><i class="fa-solid fa-receipt" style="color:var(--gold);margin-right:8px;"></i>Recent Transactions</div></div><a href="{% url 'admin_transactions' %}" class="btn btn-ghost btn-sm">View All <i class="fa-solid fa-arrow-right"></i></a></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for t in recent_txns %}
+      <tr>
+        <td><code style="font-size:.77rem;color:var(--faint);">#{{ t.txn_id }}</code></td>
+        <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.83rem;">{{ t.user.email|truncatechars:25 }}</a></td>
+        <td><span class="badge badge-gold" style="font-size:.67rem;">{{ t.get_type_display }}</span></td>
+        <td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.8rem;color:var(--muted);">{{ t.get_method_display }}</td>
+        <td style="font-size:.78rem;color:var(--faint);">{{ t.created_at|date:"M d, H:i" }}</td>
+        <td><span class="badge {{ t.status_class }}">{{ t.get_status_display }}</span></td>
+        <td>{% if t.status == 'pending' %}
+          <form method="post" action="{% url 'admin_transactions' %}" style="display:inline;">{% csrf_token %}<input type="hidden" name="txn_ids" value="{{ t.id }}"><button name="action" value="approve" type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check"></i></button></form>
+          {% else %}<span style="color:var(--faint);font-size:.78rem;">—</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const data = {{ monthly|safe }};
+  drawBarChart('admin-chart', data.map(d=>({value:d.deposit,label:d.month})));
+});
+</script>
+{% endblock %}

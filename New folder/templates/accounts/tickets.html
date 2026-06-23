@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+{% block title %}Support{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Support Center</h1><p class="page-subtitle">Get help from our support team</p></div>
+  <button class="btn btn-primary" onclick="openModal('new-ticket-modal')"><i class="fa-solid fa-plus"></i> New Ticket</button>
+</div>
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-envelope-open"></i></div><div class="s-label">Open</div><div class="s-value">{{ tickets|length }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-clock"></i></div><div class="s-label">Pending</div><div class="s-value">{{ tickets|length }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-circle-check"></i></div><div class="s-label">Resolved</div><div class="s-value">0</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--border-s);color:var(--muted);"><i class="fa-solid fa-ban"></i></div><div class="s-label">Closed</div><div class="s-value">0</div></div>
+</div>
+{% if tickets %}
+<div class="card">
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+  {% for t in tickets %}
+  <a href="{% url 'ticket_detail' t.id %}" style="display:flex;align-items:center;gap:14px;padding:1.1rem;background:var(--navy-3);border-radius:var(--radius);border:1px solid var(--border-s);transition:border-color .2s;" onmouseenter="this.style.borderColor='var(--border)'" onmouseleave="this.style.borderColor='var(--border-s)'">
+    <div style="width:40px;height:40px;border-radius:10px;background:{% if t.status == 'open' %}var(--green-bg){% elif t.status == 'pending' %}var(--amber-bg){% elif t.status == 'resolved' %}var(--blue-bg){% else %}var(--border-s){% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fa-solid {% if t.status == 'open' %}fa-envelope-open{% elif t.status == 'pending' %}fa-clock{% elif t.status == 'resolved' %}fa-circle-check{% else %}fa-ban{% endif %}" style="color:{% if t.status == 'open' %}var(--green){% elif t.status == 'pending' %}var(--amber){% elif t.status == 'resolved' %}var(--blue){% else %}var(--faint){% endif %};"></i>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ t.subject }}</div>
+      <div style="font-size:.77rem;color:var(--faint);margin-top:2px;"><span style="font-family:monospace;">#{{ t.ticket_id }}</span> &nbsp;·&nbsp; {{ t.created_at|date:"M d, Y" }} &nbsp;·&nbsp; {{ t.messages.count }} message{{ t.messages.count|pluralize }}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <span class="badge {% if t.status == 'open' %}badge-success{% elif t.status == 'pending' %}badge-warning{% elif t.status == 'resolved' %}badge-info{% else %}badge-danger{% endif %}">{{ t.get_status_display }}</span>
+      <div style="font-size:.73rem;color:var(--faint);margin-top:5px;">{{ t.get_priority_display }} priority</div>
+    </div>
+    <i class="fa-solid fa-chevron-right" style="color:var(--faint);flex-shrink:0;"></i>
+  </a>
+  {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="empty-state"><i class="fa-solid fa-headset fa-3x empty-state-icon"></i><div class="empty-state-title">No tickets yet</div><div class="empty-state-text">Create a support ticket and our team will respond within 24 hours.</div><button class="btn btn-primary btn-sm" onclick="openModal('new-ticket-modal')"><i class="fa-solid fa-plus"></i> Create Ticket</button></div>
+{% endif %}
+
+<!-- NEW TICKET MODAL -->
+<div class="modal-overlay" id="new-ticket-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"><i class="fa-solid fa-headset" style="color:var(--gold);margin-right:8px;"></i>New Support Ticket</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      <div class="form-group"><label class="form-label">Subject</label><input type="text" name="subject" class="form-control" placeholder="Briefly describe your issue" required></div>
+      <div class="form-group"><label class="form-label">Priority</label><select name="priority" class="form-control"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
+      <div class="form-group"><label class="form-label">Message</label><textarea name="message" class="form-control" rows="5" placeholder="Describe your issue in detail..." required></textarea></div>
+      <div class="form-group"><label class="form-label">Attachment <span style="color:var(--faint);font-weight:400;">(optional, max 40MB)</span></label><input type="file" name="attachment" class="form-control" accept="image/*,.pdf,.doc,.docx,.txt"></div>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

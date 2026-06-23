@@ -1,0 +1,54 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Login{% endblock %}
+{% block body %}
+<div class="auth-layout">
+  <div class="auth-left">
+    <div style="max-width:380px;text-align:center;position:relative;z-index:1;">
+      <div style="width:64px;height:64px;background:var(--teal-glow);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;color:var(--teal);margin:0 auto 1.5rem;"><i class="fa-solid fa-chart-line"></i></div>
+      <h1 style="font-size:1.85rem;margin-bottom:.9rem;">Grow Your Wealth<br><span style="color:var(--gold);">Intelligently.</span></h1>
+      <p style="color:var(--muted);font-size:.89rem;line-height:1.75;margin-bottom:2.25rem;">Join thousands of smart investors earning consistent daily returns.</p>
+      <div style="display:flex;flex-direction:column;gap:.85rem;">
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--border-s);border-radius:13px;padding:.85rem 1rem;text-align:left;"><div style="width:36px;height:36px;background:var(--green-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;"><i class="fa-solid fa-arrow-trend-up"></i></div><div><div style="font-weight:600;font-size:.85rem;">Daily ROI Up to 5%</div><div style="font-size:.76rem;color:var(--faint);">Earnings credited every single day</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--border-s);border-radius:13px;padding:.85rem 1rem;text-align:left;"><div style="width:36px;height:36px;background:var(--blue-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;"><i class="fa-solid fa-lock"></i></div><div><div style="font-weight:600;font-size:.85rem;">Capital Protected</div><div style="font-size:.76rem;color:var(--faint);">Principal always safe and withdrawable</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--border-s);border-radius:13px;padding:.85rem 1rem;text-align:left;"><div style="width:36px;height:36px;background:rgba(201,168,76,.1);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;"><i class="fa-solid fa-bolt"></i></div><div><div style="font-weight:600;font-size:.85rem;">Instant Withdrawals</div><div style="font-size:.76rem;color:var(--faint);">Withdraw earnings anytime 24/7</div></div></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:2.5rem;margin-top:2.25rem;padding-top:1.75rem;border-top:1px solid var(--border-s);">
+        <div><div style="font-family:var(--ff-d);font-size:1.4rem;font-weight:800;color:var(--gold);">$48M+</div><div style="font-size:.71rem;color:var(--faint);">Paid Out</div></div>
+        <div><div style="font-family:var(--ff-d);font-size:1.4rem;font-weight:800;color:var(--gold);">24K+</div><div style="font-size:.71rem;color:var(--faint);">Investors</div></div>
+        <div><div style="font-family:var(--ff-d);font-size:1.4rem;font-weight:800;color:var(--gold);">5 Yrs</div><div style="font-size:.71rem;color:var(--faint);">Track Record</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-logo"><div class="auth-logo-icon"><i class="fa-solid fa-chart-line"></i></div><span class="auth-logo-text">Invest<span style="color:var(--gold);">Pro</span></span></div>
+      <h2 style="font-size:1.6rem;margin-bottom:6px;">Welcome back</h2>
+      <p style="color:var(--faint);font-size:.87rem;margin-bottom:1.65rem;">Sign in to continue investing</p>
+      <form method="post">{% csrf_token %}
+        <div class="form-group"><label class="form-label">Email Address</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input type="email" name="email" class="form-control" placeholder="you@example.com" required></div></div>
+        <div class="form-group"><label class="form-label" style="display:flex;justify-content:space-between;"><span>Password</span><a href="{% url 'forgot_password' %}" style="color:var(--gold);font-size:.78rem;font-weight:500;">Forgot?</a></label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input type="password" name="password" id="pw" class="form-control" placeholder="Your password" required><button type="button" onclick="togglePw('pw',this)" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--faint);cursor:pointer;font-size:.9rem;"><i class="fa-solid fa-eye"></i></button></div></div>
+        <div style="display:flex;align-items:center;gap:9px;margin:.5rem 0 1.1rem;">
+          <input type="checkbox" id="remember" name="remember" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
+          <label for="remember" style="font-size:.83rem;color:var(--muted);cursor:pointer;">Remember me for 30 days</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In <i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+      {% if site_settings.allow_google_login or site_settings.allow_apple_login or site_settings.allow_metamask_login %}
+      <div class="divider"><span class="divider-text">or continue with</span></div>
+      <div style="display:flex;gap:9px;">
+        {% if site_settings.allow_google_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-google"></i> Google</a>{% endif %}
+        {% if site_settings.allow_apple_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-apple"></i> Apple</a>{% endif %}
+        {% if site_settings.allow_metamask_login %}<a href="#" class="btn btn-outline btn-block"><i class="fa-brands fa-ethereum"></i> MetaMask</a>{% endif %}
+      </div>
+      {% endif %}
+      <p class="auth-footer" style="margin-top:1.25rem;">Don't have an account? <a href="{% url 'register' %}">Create one free</a></p>
+      <div style="margin-top:.75rem;display:flex;justify-content:center;gap:1rem;font-size:.74rem;">
+        <a href="/" style="color:var(--faint);"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <a href="{% url 'front_privacy' %}" style="color:var(--faint);">Privacy</a>
+        <a href="{% url 'front_terms' %}" style="color:var(--faint);">Terms</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script>function togglePw(id,b){const i=document.getElementById(id);i.type=i.type==='text'?'password':'text';b.innerHTML=i.type==='text'?'<i class="fa-solid fa-eye-slash"></i>':'<i class="fa-solid fa-eye"></i>';}</script>{% endblock %}

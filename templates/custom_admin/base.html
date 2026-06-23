@@ -13,7 +13,8 @@
 <body>
 <div class="admin-top"></div>
 {% if messages %}<div id="django-messages" style="display:none;">{% for m in messages %}<span data-type="{{ m.tags }}" data-msg="{{ m.message }}"></span>{% endfor %}</div>{% endif %}
-<div class="app-layout">
+{% comment %} <div class="app-layout"> {% endcomment %}
+<div>
   <aside class="sidebar admin-sidebar" id="sidebar" style="padding-top:3px;">
     <div class="sidebar-logo" style="border-bottom:1px solid rgba(255,255,255,.06);">
       {% if branding.site_logo %}<img src="{{ branding.site_logo.url }}" alt="Logo" style="height:30px;object-fit:contain;">

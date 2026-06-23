@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{% endblock %} — {{ site_settings.site_name|default:"InvestPro" }}</title>
+{% load static %}
+<meta name="description" content="{% block meta_desc %}{{ site_settings.site_name|default:'InvestPro' }} — Smart, secure, and rewarding investment plans.{% endblock %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/icons.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% if branding.favicon %}<link rel="icon" href="{{ branding.favicon.url }}">{% endif %}
+{% if site_settings.custom_css %}<style>{{ site_settings.custom_css }}</style>{% endif %}
+</head>
+<body>
+{% if messages %}<div id="django-messages" style="display:none;">{% for m in messages %}<span data-type="{{ m.tags }}" data-msg="{{ m.message }}"></span>{% endfor %}</div>{% endif %}
+
+<!-- PUBLIC NAV -->
+<nav class="front-nav">
+  <a href="{% url 'front_home' %}" class="logo">
+    {% if branding.site_logo %}<img src="{{ branding.site_logo.url }}" alt="{{ site_settings.site_name }}">
+    {% else %}<div class="sidebar-logo-icon"><i class="fa-solid fa-sack-dollar"></i></div>{{ site_settings.site_name|default:"InvestPro" }}{% endif %}
+  </a>
+  <div class="nav-links">
+    <a href="{% url 'front_home' %}">Home</a>
+    <a href="{% url 'front_about' %}">About</a>
+    <a href="{% url 'front_how_it_works' %}">How It Works</a>
+    <a href="{% url 'plans' %}">Plans</a>
+    <a href="{% url 'front_top_investors' %}">Top Investors</a>
+    <a href="{% url 'front_blog' %}">Blog</a>
+    <a href="{% url 'front_faq' %}">FAQ</a>
+    <a href="{% url 'front_contact' %}">Contact</a>
+  </div>
+  <div class="nav-cta">
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'dashboard' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Sign In</a>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started</a>
+    {% endif %}
+    <button class="hamburger" id="front-hamburger" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div id="front-mobile-menu" style="display:none;background:var(--surface);border-bottom:1px solid var(--border-s);padding:1rem 2rem;">
+  <a href="{% url 'front_home' %}" style="display:block;padding:.6rem 0;color:var(--muted);">Home</a>
+  <a href="{% url 'front_about' %}" style="display:block;padding:.6rem 0;color:var(--muted);">About</a>
+  <a href="{% url 'front_how_it_works' %}" style="display:block;padding:.6rem 0;color:var(--muted);">How It Works</a>
+  <a href="{% url 'plans' %}" style="display:block;padding:.6rem 0;color:var(--muted);">Plans</a>
+  <a href="{% url 'front_top_investors' %}" style="display:block;padding:.6rem 0;color:var(--muted);">Top Investors</a>
+  <a href="{% url 'front_blog' %}" style="display:block;padding:.6rem 0;color:var(--muted);">Blog</a>
+  <a href="{% url 'front_faq' %}" style="display:block;padding:.6rem 0;color:var(--muted);">FAQ</a>
+  <a href="{% url 'front_contact' %}" style="display:block;padding:.6rem 0;color:var(--muted);">Contact</a>
+</div>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="front-footer">
+  <div class="front-footer-grid">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--ff-d);font-size:1.1rem;font-weight:700;margin-bottom:1rem;">
+        {% if branding.site_logo %}<img src="{{ branding.site_logo.url }}" alt="{{ site_settings.site_name }}" style="height:32px;">
+        {% else %}<div class="sidebar-logo-icon"><i class="fa-solid fa-sack-dollar"></i></div>{{ site_settings.site_name|default:"InvestPro" }}{% endif %}
+      </div>
+      <p style="color:var(--muted);font-size:.85rem;line-height:1.75;max-width:320px;">A smart, secure, and rewarding investment platform — built for investors who value transparency and consistent returns.</p>
+      {% if site_settings.company_address %}<p style="color:var(--faint);font-size:.8rem;margin-top:1rem;"><i class="fa-solid fa-location-dot"></i> {{ site_settings.company_address }}</p>{% endif %}
+      {% if site_settings.company_phone %}<p style="color:var(--faint);font-size:.8rem;margin-top:.4rem;"><i class="fa-solid fa-phone"></i> {{ site_settings.company_phone }}</p>{% endif %}
+      {% if site_settings.support_email %}<p style="color:var(--faint);font-size:.8rem;margin-top:.4rem;"><i class="fa-solid fa-envelope"></i> {{ site_settings.support_email }}</p>{% endif %}
+    </div>
+    <div>
+      <h4>Platform</h4>
+      <a href="{% url 'plans' %}">Investment Plans</a>
+      <a href="{% url 'front_how_it_works' %}">How It Works</a>
+      <a href="{% url 'front_top_investors' %}">Top Investors</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="{% url 'front_about' %}">About Us</a>
+      <a href="{% url 'front_blog' %}">Blog</a>
+      <a href="{% url 'front_faq' %}">FAQ</a>
+      <a href="{% url 'front_contact' %}">Contact Us</a>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <a href="{% url 'front_privacy' %}">Privacy Policy</a>
+      <a href="{% url 'front_terms' %}">Terms &amp; Conditions</a>
+      <a href="{% url 'login' %}">Sign In</a>
+      <a href="{% url 'register' %}">Create Account</a>
+    </div>
+  </div>
+  <div class="front-footer-bottom">
+    <span>&copy; {% now "Y" %} {{ site_settings.site_name|default:"InvestPro" }}. All rights reserved.</span>
+    <span><i class="fa-solid fa-lock"></i> Secured Platform</span>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('#django-messages span').forEach(s=>{
+    const t=s.dataset.type.includes('error')||s.dataset.type.includes('danger')?'danger':s.dataset.type.includes('warning')?'warning':s.dataset.type.includes('info')?'info':'success';
+    showToast(s.dataset.msg,t,4000);
+  });
+  const ham = document.getElementById('front-hamburger');
+  const menu = document.getElementById('front-mobile-menu');
+  if (ham) ham.addEventListener('click', ()=>{ menu.style.display = menu.style.display==='none'?'block':'none'; });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

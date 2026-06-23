@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Under Maintenance{% endblock %}
+{% block body %}
+<div class="maintenance-wrap">
+  <div class="maintenance-card">
+    {% if settings.maintenance_image %}
+    <img src="{{ settings.maintenance_image.url }}" alt="Maintenance" style="max-width:280px;margin:0 auto 1.5rem;">
+    {% else %}
+    <div style="width:80px;height:80px;border-radius:50%;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--amber);margin:0 auto 1.5rem;"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+    {% endif %}
+    <h1 style="font-family:var(--ff-d);font-size:1.75rem;margin-bottom:1rem;">We'll be right back</h1>
+    <p style="color:var(--muted);font-size:.95rem;line-height:1.75;">{{ settings.maintenance_message }}</p>
+  </div>
+</div>
+{% endblock %}

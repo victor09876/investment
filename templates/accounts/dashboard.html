@@ -16,7 +16,7 @@
 </div>
 {% endif %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;">
-  <div><h1 class="page-title">Good day, {{ request.user.first_name }} 👋</h1><p class="page-subtitle">Here's your portfolio overview</p></div>
+  <div><h1 class="page-title">Good day, {{ request.user.first_name }} </h1><p class="page-subtitle">Here's your portfolio overview</p></div>
   <a href="{% url 'plans' %}" class="btn btn-primary">+ New Investment</a>
 </div>
 <!-- STATS -->
@@ -51,8 +51,8 @@
     <div class="card card-gold">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div class="card-title">Balances</div></div>
       <div style="display:flex;flex-direction:column;gap:1rem;">
-        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-sack-dollar"></i> Wallet Balance</span><span style="font-weight:600;">${{ request.user.wallet_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.wallet_balance stats.total_balance|default:1 100 %}" style="width:0;"></div></div></div>
-        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-chart-line"></i> Profit Balance</span><span style="font-weight:600;color:var(--green);">${{ request.user.profit_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.profit_balance stats.total_balance|default:1 100 %}" style="width:0;background:linear-gradient(90deg,var(--green),#5EE8A8);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-sack-dollar"></i>&nbsp; Wallet Balance</span><span style="font-weight:600;">${{ request.user.wallet_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.wallet_balance stats.total_balance|default:1 100 %}" style="width:0;"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;"><span style="color:var(--muted);"><i class="fa-solid fa-chart-line"></i>&nbsp; Profit Balance</span><span style="font-weight:600;color:var(--green);">${{ request.user.profit_balance|floatformat:2 }}</span></div><div class="progress"><div class="progress-bar" data-progress="{% widthratio request.user.profit_balance stats.total_balance|default:1 100 %}" style="width:0;background:linear-gradient(90deg,var(--green),#5EE8A8);"></div></div></div>
       </div>
     </div>
   </div>
@@ -65,7 +65,7 @@
     {% for inv in active_investments %}
     <div class="invest-card">
       <div class="invest-card-top">
-        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i> {{ inv.plan.name }}</div><div class="invest-detail">Started {{ inv.start_date|date:"M d, Y" }} · {{ inv.plan.duration_days }} days</div></div>
+        <div><div class="invest-plan"><i class="fa-solid fa-{{ inv.plan.fa_icon }}"></i>&nbsp;&nbsp;&nbsp; {{ inv.plan.name }}</div><div class="invest-detail">Started {{ inv.start_date|date:"M d, Y" }} · {{ inv.plan.duration_days }} days</div></div>
         <div style="text-align:right;"><div class="invest-amount">${{ inv.amount|floatformat:2 }}</div><span class="badge badge-success" style="margin-top:4px;">Active</span></div>
       </div>
       <div style="margin:1rem 0 .5rem;"><div style="display:flex;justify-content:space-between;font-size:.77rem;color:var(--faint);margin-bottom:6px;"><span>{{ inv.progress_pct }}% complete</span><span>{{ inv.days_remaining }} days left</span></div><div class="progress"><div class="progress-bar" data-progress="{{ inv.progress_pct }}" style="width:0;"></div></div></div>

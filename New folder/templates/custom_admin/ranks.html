@@ -1,0 +1,58 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Rankings{% endblock %}
+{% block page_title %}Ranking Management{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Ranking System</h1><p class="page-subtitle">Configure investor ranking tiers and benefits</p></div><button class="btn btn-primary" onclick="openModal('new-rank-modal')"><i class="fa-solid fa-plus"></i> New Rank</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+{% for rank in ranks %}
+<div class="rank-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <div class="rank-icon" style="background:{{ rank.color }}22;color:{{ rank.color }};margin-bottom:0;"><i class="fa-solid fa-trophy"></i></div>
+    <span class="badge {% if rank.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if rank.is_active %}Active{% else %}Inactive{% endif %}</span>
+  </div>
+  <div style="font-family:var(--ff-d);font-size:1.05rem;font-weight:700;margin-bottom:.25rem;">{{ rank.name }}</div>
+  <div style="font-size:.79rem;color:var(--faint);margin-bottom:1rem;">{{ rank.description|default:"No description" }}</div>
+  <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem;margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Min Deposit</span><span style="font-weight:600;">${{ rank.min_deposit|floatformat:0 }}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Min Referrals</span><span style="font-weight:600;">{{ rank.min_referrals }}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Min Investment</span><span style="font-weight:600;">${{ rank.min_investment|floatformat:0 }}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Weekly Reward</span><span style="font-weight:600;color:var(--green);">${{ rank.weekly_reward|floatformat:2 }}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Rank Bonus</span><span style="font-weight:600;">{{ rank.rank_bonus_pct }}%</span></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Special ROI</span><span style="font-weight:600;color:var(--gold);">+{{ rank.special_roi_pct }}%</span></div>
+  </div>
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="rank_id" value="{{ rank.id }}"><button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm_rank(event)"><i class="fa-solid fa-trash"></i> Delete Rank</button></form>
+</div>
+{% empty %}
+<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-trophy fa-2x empty-state-icon"></i><div class="empty-state-title">No ranks configured</div><div class="empty-state-text">Create your first rank tier.</div></div>
+{% endfor %}
+</div>
+
+<!-- NEW RANK MODAL -->
+<div class="modal-overlay" id="new-rank-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header"><div class="modal-title"><i class="fa-solid fa-trophy" style="color:var(--gold);margin-right:8px;"></i>New Rank Tier</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="create">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Rank Name</label><input type="text" name="name" class="form-control" placeholder="e.g. Beginner, Bronze, Gold" required></div>
+        <div class="form-group"><label class="form-label">Color</label><input type="color" name="color" class="form-control" value="#5EEAD4" style="height:42px;"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2" placeholder="Brief description of this rank"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Min Deposit ($)</label><input type="number" name="min_deposit" class="form-control" value="0" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Min Referrals</label><input type="number" name="min_referrals" class="form-control" value="0" min="0"></div>
+        <div class="form-group"><label class="form-label">Min Investment ($)</label><input type="number" name="min_investment" class="form-control" value="0" min="0" step="0.01"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">Weekly Reward ($)</label><input type="number" name="weekly_reward" class="form-control" value="0" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Rank Bonus (%)</label><input type="number" name="rank_bonus_pct" class="form-control" value="0" min="0" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Special ROI (%)</label><input type="number" name="special_roi_pct" class="form-control" value="0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Sort Order</label><input type="number" name="sort_order" class="form-control" value="0"></div>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-plus"></i> Create Rank</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>function confirm_rank(e){ return true; }</script>
+{% endblock %}

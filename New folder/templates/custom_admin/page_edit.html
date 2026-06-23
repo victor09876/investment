@@ -1,0 +1,37 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Edit {{ page.title }}{% endblock %}
+{% block page_title %}Edit Page: {{ page.title }}{% endblock %}
+{% block content %}
+<div style="max-width:800px;">
+  <div style="margin-bottom:1.25rem;display:flex;gap:8px;align-items:center;"><a href="{% url 'admin_pages' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Pages</a>
+    {% if page.slug == 'home' %}<a href="/" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'about' %}<a href="{% url 'front_about' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'contact' %}<a href="{% url 'front_contact' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'faq' %}<a href="{% url 'front_faq' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'how_it_works' %}<a href="{% url 'front_how_it_works' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'privacy' %}<a href="{% url 'front_privacy' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% elif page.slug == 'terms' %}<a href="{% url 'front_terms' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
+    {% endif %}
+  </div>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-file-lines" style="color:var(--gold);margin-right:8px;"></i>Page Details</div>
+      <div class="form-group"><label class="form-label">Title</label><input type="text" name="title" class="form-control" value="{{ page.title }}"></div>
+      <div class="form-group"><label class="form-label">Subtitle / Tagline</label><input type="text" name="subtitle" class="form-control" value="{{ page.subtitle }}" placeholder="Shown under the page title on the hero section"></div>
+      <div class="form-group"><label class="form-label">Meta Description</label><input type="text" name="meta_desc" class="form-control" value="{{ page.meta_desc }}" placeholder="SEO description (150-160 chars)"></div>
+      <div class="form-group">
+        <label class="form-label">Hero Image</label>
+        {% if page.hero_image %}<div style="margin-bottom:.5rem;"><img src="{{ page.hero_image.url }}" style="max-height:120px;border-radius:var(--radius);"></div>{% endif %}
+        <input type="file" name="hero_image" class="form-control" accept="image/*">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;"><label class="toggle"><input type="checkbox" name="is_active" {% if page.is_active %}checked{% endif %}><span class="toggle-slider"></span></label><span style="font-size:.85rem;">Page is visible to the public</span></div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title" style="margin-bottom:1.1rem;"><i class="fa-solid fa-pen-to-square" style="color:var(--gold);margin-right:8px;"></i>Content</div>
+      <p class="form-hint" style="margin-bottom:.75rem;">HTML is supported. Each line break starts a new paragraph. For FAQ pages, use the format <code style="background:var(--navy-3);padding:1px 6px;border-radius:4px;">Q: question | A: answer</code> on separate lines — one pair per item.</p>
+      <textarea name="content" class="form-control" rows="16" style="font-family:var(--ff-m);font-size:.83rem;">{{ page.content }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-floppy-disk"></i> Save Page</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Branding{% endblock %}
+{% block page_title %}Branding Management{% endblock %}
+{% block content %}
+<div style="max-width:800px;">
+  <div class="page-header"><div><h1 class="page-title">Branding Settings</h1><p class="page-subtitle">Manage logos and visual identity across the platform</p></div></div>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-image" style="color:var(--gold);margin-right:8px;"></i>Site Logo</div>
+        {% if branding.site_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.site_logo.url }}" alt="Site Logo" style="max-height:60px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="site_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Main logo shown in sidebar and header</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-moon" style="color:var(--gold);margin-right:8px;"></i>Dark Mode Logo</div>
+        {% if branding.dark_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.dark_logo.url }}" alt="Dark Logo" style="max-height:60px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="dark_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Logo variant for dark backgrounds</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-sun" style="color:var(--gold);margin-right:8px;"></i>Light Mode Logo</div>
+        {% if branding.light_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.light_logo.url }}" alt="Light Logo" style="max-height:60px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="light_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Logo variant for light backgrounds</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-mobile-screen" style="color:var(--gold);margin-right:8px;"></i>Mobile Logo</div>
+        {% if branding.mobile_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.mobile_logo.url }}" alt="Mobile Logo" style="max-height:40px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="mobile_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Compact logo for small screens</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-star" style="color:var(--gold);margin-right:8px;"></i>Favicon</div>
+        {% if branding.favicon %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.favicon.url }}" alt="Favicon" style="max-height:32px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="favicon" class="form-control" accept="image/*">
+        <p class="form-hint">Browser tab icon (32x32 or 64x64 PNG)</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-right-to-bracket" style="color:var(--gold);margin-right:8px;"></i>Login Page Logo</div>
+        {% if branding.login_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.login_logo.url }}" alt="Login Logo" style="max-height:60px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="login_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Shown on login and registration pages</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-envelope" style="color:var(--gold);margin-right:8px;"></i>Email Logo</div>
+        {% if branding.email_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.email_logo.url }}" alt="Email Logo" style="max-height:50px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="email_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Logo used in email notifications</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-shoe-prints" style="color:var(--gold);margin-right:8px;"></i>Footer Logo</div>
+        {% if branding.footer_logo %}<div style="margin-bottom:.75rem;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;text-align:center;"><img src="{{ branding.footer_logo.url }}" alt="Footer Logo" style="max-height:50px;object-fit:contain;"></div>{% endif %}
+        <input type="file" name="footer_logo" class="form-control" accept="image/*">
+        <p class="form-hint">Logo shown in the website footer</p>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;"><button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-floppy-disk"></i> Save Branding</button></div>
+  </form>
+</div>
+{% endblock %}

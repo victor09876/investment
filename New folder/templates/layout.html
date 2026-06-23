@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      {% if branding.site_logo %}
+        <img src="{{ branding.site_logo.url }}" alt="{{ site_settings.site_name|default:'InvestPro' }}" style="height:34px;object-fit:contain;">
+      {% else %}
+        <div class="sidebar-logo-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="sidebar-logo-text">{{ site_settings.site_name|default:"Invest" }}<span>Pro</span></div>
+      {% endif %}
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+      <a href="{% url 'dashboard' %}" class="nav-item {% if request.path == '/dashboard/' %}active{% endif %}"><i class="fa-solid fa-house nav-icon"></i>Dashboard</a>
+      {% if 'plans' not in sidebar_visible.hidden %}<a href="{% url 'plans' %}" class="nav-item {% if '/investments/plans/' in request.path %}active{% endif %}"><i class="fa-solid fa-gem nav-icon"></i>Investment Plans</a>{% endif %}
+      {% if 'my_investments' not in sidebar_visible.hidden %}<a href="{% url 'my_investments' %}" class="nav-item {% if '/investments/my/' in request.path %}active{% endif %}"><i class="fa-solid fa-chart-pie nav-icon"></i>My Investments</a>{% endif %}
+      {% if 'calculator' not in sidebar_visible.hidden %}<a href="{% url 'calculator' %}" class="nav-item {% if '/investments/calculator/' in request.path %}active{% endif %}"><i class="fa-solid fa-calculator nav-icon"></i>ROI Calculator</a>{% endif %}
+
+      <div class="nav-section-label">Finance</div>
+      {% if 'deposit' not in sidebar_visible.hidden %}<a href="{% url 'deposit' %}" class="nav-item {% if '/transactions/deposit/' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card nav-icon"></i>Deposit</a>{% endif %}
+      {% if 'withdrawal' not in sidebar_visible.hidden %}<a href="{% url 'withdrawal' %}" class="nav-item {% if '/transactions/withdrawal/' in request.path %}active{% endif %}"><i class="fa-solid fa-money-bill-transfer nav-icon"></i>Withdrawal</a>{% endif %}
+      {% if 'transactions_history' not in sidebar_visible.hidden %}<a href="{% url 'transactions' %}" class="nav-item {% if '/transactions/history/' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt nav-icon"></i>Transactions</a>{% endif %}
+      {% if site_settings.allow_transfer and 'transfer' not in sidebar_visible.hidden %}
+      <a href="{% url 'transfer' %}" class="nav-item {% if request.path == '/transfer/' %}active{% endif %}"><i class="fa-solid fa-right-left nav-icon"></i>Transfer</a>
+      {% endif %}
+      {% if 'statement' not in sidebar_visible.hidden %}<a href="{% url 'statement' %}" class="nav-item {% if request.path == '/statement/' %}active{% endif %}"><i class="fa-solid fa-file-invoice nav-icon"></i>Statement</a>{% endif %}
+      {% if 'investment_report' not in sidebar_visible.hidden %}<a href="{% url 'investment_report' %}" class="nav-item {% if request.path == '/investment-report/' %}active{% endif %}"><i class="fa-solid fa-chart-column nav-icon"></i>Investment Report</a>{% endif %}
+
+      <div class="nav-section-label">Account</div>
+      {% if 'referrals' not in sidebar_visible.hidden %}<a href="{% url 'referrals' %}" class="nav-item {% if request.path == '/referrals/' %}active{% endif %}"><i class="fa-solid fa-users nav-icon"></i>Referrals</a>{% endif %}
+      {% if site_settings.allow_ranking and 'ranking' not in sidebar_visible.hidden %}
+      <a href="{% url 'ranking' %}" class="nav-item {% if request.path == '/ranking/' %}active{% endif %}"><i class="fa-solid fa-trophy nav-icon"></i>Ranking</a>
+      {% endif %}
+      {% if 'kyc' not in sidebar_visible.hidden %}<a href="{% url 'kyc' %}" class="nav-item {% if request.path == '/kyc/' %}active{% endif %}"><i class="fa-solid fa-id-card nav-icon"></i>KYC Verification</a>{% endif %}
+      {% if 'notifications' not in sidebar_visible.hidden %}
+      <a href="{% url 'notifications' %}" class="nav-item {% if request.path == '/notifications/' %}active{% endif %}">
+        <i class="fa-solid fa-bell nav-icon"></i>Notifications
+        {% if global_unread %}<span class="nav-badge">{{ global_unread }}</span>{% endif %}
+      </a>
+      {% endif %}
+      {% if 'tickets' not in sidebar_visible.hidden %}<a href="{% url 'tickets' %}" class="nav-item {% if '/tickets/' in request.path %}active{% endif %}"><i class="fa-solid fa-headset nav-icon"></i>Support</a>{% endif %}
+      {% if 'login_history' not in sidebar_visible.hidden %}<a href="{% url 'login_history' %}" class="nav-item {% if request.path == '/login-history/' %}active{% endif %}"><i class="fa-solid fa-shield-halved nav-icon"></i>Login History</a>{% endif %}
+      {% if 'profile' not in sidebar_visible.hidden %}<a href="{% url 'profile' %}" class="nav-item {% if request.path == '/profile/' %}active{% endif %}"><i class="fa-solid fa-circle-user nav-icon"></i>Profile</a>{% endif %}
+      {% if 'settings' not in sidebar_visible.hidden %}<a href="{% url 'settings' %}" class="nav-item {% if request.path == '/settings/' %}active{% endif %}"><i class="fa-solid fa-gear nav-icon"></i>Settings</a>{% endif %}
+
+      {% if request.user.is_staff %}
+      <div class="nav-section-label">Admin</div>
+      <a href="{% url 'admin_dashboard' %}" class="nav-item" style="color:var(--amber);"><i class="fa-solid fa-shield-halved nav-icon"></i>Admin Panel</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}" class="avatar" style="width:34px;height:34px;">
+        {% else %}
+          <div class="avatar-ph" style="width:34px;height:34px;font-size:.8rem;">{{ request.user.initials }}</div>
+        {% endif %}
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">{{ request.user.full_name }}</div>
+          <div class="sidebar-user-role">{% if request.user.is_kyc_verified %}<i class="fa-solid fa-circle-check" style="color:var(--green);font-size:.7rem;"></i> Verified{% else %}Investor{% endif %}</div>
+        </div>
+        <a href="{% url 'logout' %}" title="Logout" style="color:var(--faint);padding:4px;"><i class="fa-solid fa-right-from-bracket"></i></a>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    </div>
+    <div class="topbar-right">
+      <!-- Notification Bell Dropdown -->
+      <div style="position:relative;" id="notif-wrap">
+        <button class="notif-btn" id="notif-bell" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--border-s);border-radius:10px;border:none;color:var(--text);cursor:pointer;position:relative;">
+          <i class="fa-solid fa-bell"></i>
+          {% if global_unread %}<span class="notif-dot"></span>{% endif %}
+        </button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-dropdown-header">
+            <span style="font-family:var(--ff-d);font-size:.92rem;font-weight:700;">Notifications</span>
+            <a href="{% url 'notifications' %}" style="font-size:.78rem;color:var(--gold);">View All</a>
+          </div>
+          <div class="notif-dropdown-body" id="notif-dd-body">
+            <div style="text-align:center;padding:2rem;color:var(--faint);font-size:.84rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+          </div>
+          <div class="notif-dd-footer">
+            <form method="post" action="{% url 'notifications' %}">{% csrf_token %}<input type="hidden" name="action" value="mark_all"><button type="submit" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:.82rem;"><i class="fa-solid fa-check-double"></i> Mark all read</button></form>
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'profile' %}">
+        {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}" class="avatar" style="width:34px;height:34px;cursor:pointer;">
+        {% else %}
+          <div class="avatar-ph" style="width:34px;height:34px;font-size:.8rem;cursor:pointer;">{{ request.user.initials }}</div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-content">{% block content %}{% endblock %}</main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Notification bell dropdown
+const bell = document.getElementById('notif-bell');
+const dropdown = document.getElementById('notif-dropdown');
+bell?.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  dropdown.classList.toggle('open');
+  if (dropdown.classList.contains('open')) {
+    const body = document.getElementById('notif-dd-body');
+    try {
+      const resp = await fetch('{% url "notifications_api" %}');
+      const data = await resp.json();
+      if (!data.notifications.length) {
+        body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--faint);font-size:.84rem;"><i class="fa-solid fa-bell-slash fa-2x" style="margin-bottom:.75rem;opacity:.4;"></i><br>No notifications</div>';
+        return;
+      }
+      body.innerHTML = data.notifications.map(n => `
+        <div class="notif-dd-item ${n.is_read ? '' : 'unread'}" onclick="markReadAndNav('${n.id}','{% url 'notifications' %}')">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--navy-4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;"><i class="fa-solid ${n.icon}"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.83rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.title}</div>
+            <div style="font-size:.76rem;color:var(--faint);margin-top:2px;">${n.time}</div>
+          </div>
+          ${!n.is_read ? '<div style="width:7px;height:7px;background:var(--gold);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>' : ''}
+        </div>`).join('');
+    } catch(e) {
+      body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--faint);font-size:.84rem;">Failed to load</div>';
+    }
+  }
+});
+document.addEventListener('click', e => { if (!document.getElementById('notif-wrap')?.contains(e.target)) dropdown?.classList.remove('open'); });
+
+function markReadAndNav(id, url) { window.location.href = url; }
+</script>
+{% endblock %}

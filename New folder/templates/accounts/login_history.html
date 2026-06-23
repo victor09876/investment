@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block title %}Login History{% endblock %}
+{% block page_title %}Login History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Login History</h1><p class="page-subtitle">Review all login activity on your account</p></div>
+</div>
+<div class="alert alert-info" style="margin-bottom:1.5rem;">
+  <i class="fa-solid fa-shield-halved"></i>
+  If you notice any unrecognised activity, change your password immediately and contact support.
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date & Time</th><th>Browser</th><th>Operating System</th><th>Device</th><th>IP Address</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for h in history %}
+      <tr>
+        <td><div style="font-weight:600;font-size:.86rem;">{{ h.created_at|date:"M d, Y" }}</div><div style="font-size:.75rem;color:var(--faint);">{{ h.created_at|time:"H:i:s" }}</div></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            {% if 'Chrome' in h.browser %}<i class="fa-brands fa-chrome" style="color:#4285F4;"></i>
+            {% elif 'Firefox' in h.browser %}<i class="fa-brands fa-firefox-browser" style="color:#FF7139;"></i>
+            {% elif 'Safari' in h.browser %}<i class="fa-brands fa-safari" style="color:#006CFF;"></i>
+            {% elif 'Edge' in h.browser %}<i class="fa-brands fa-edge" style="color:#0078D7;"></i>
+            {% else %}<i class="fa-solid fa-globe" style="color:var(--muted);"></i>{% endif %}
+            <span>{{ h.browser }} {{ h.browser_ver }}</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            {% if 'Windows' in h.os %}<i class="fa-brands fa-windows" style="color:#00A4EF;"></i>
+            {% elif 'Mac' in h.os or 'iOS' in h.os %}<i class="fa-brands fa-apple"></i>
+            {% elif 'Android' in h.os %}<i class="fa-brands fa-android" style="color:#3DDC84;"></i>
+            {% elif 'Linux' in h.os %}<i class="fa-brands fa-linux"></i>
+            {% else %}<i class="fa-solid fa-desktop" style="color:var(--muted);"></i>{% endif %}
+            <span>{{ h.os }} {{ h.os_ver }}</span>
+          </div>
+        </td>
+        <td>
+          {% if h.device_type == 'mobile' %}<i class="fa-solid fa-mobile-screen-button"></i>
+          {% elif h.device_type == 'tablet' %}<i class="fa-solid fa-tablet-screen-button"></i>
+          {% else %}<i class="fa-solid fa-desktop"></i>{% endif %}
+          <span style="margin-left:6px;">{{ h.device }}</span>
+        </td>
+        <td><code style="font-size:.82rem;color:var(--gold);">{{ h.ip_address }}</code></td>
+        <td>
+          <span class="badge {% if h.status == 'success' %}badge-success{% else %}badge-danger{% endif %}">
+            <i class="fa-solid {% if h.status == 'success' %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+            {{ h.get_status_display }}
+          </span>
+          {% if h.is_new_device %}<span class="badge badge-warning" style="margin-left:4px;"><i class="fa-solid fa-star"></i> New</span>{% endif %}
+        </td>
+        <td>{% if h.is_new_device %}<span style="font-size:.75rem;color:var(--amber);">New device/IP</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;color:var(--faint);padding:3rem;"><i class="fa-solid fa-shield-halved fa-2x" style="margin-bottom:.75rem;opacity:.3;display:block;"></i>No login history yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

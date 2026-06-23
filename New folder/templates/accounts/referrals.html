@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block title %}Referrals{% endblock %}
+{% block page_title %}Referral Program{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Referral Program</h1><p class="page-subtitle">Earn commissions for every investor you refer</p></div>
+</div>
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-users"></i></div><div class="s-label">Total Referrals</div><div class="s-value">{{ referrals.count }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-dollar-sign"></i></div><div class="s-label">Total Earned</div><div class="s-value" style="color:var(--green);">${{ total_earn|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-link"></i></div><div class="s-label">Your Code</div><div class="s-value" style="font-size:1.1rem;">{{ request.user.referral_code }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--amber-bg);color:var(--amber);"><i class="fa-solid fa-user-check"></i></div><div class="s-label">Active Referrals</div><div class="s-value">{{ referrals.count }}</div></div>
+</div>
+
+<!-- REFERRAL LINK -->
+<div class="card card-gold" style="margin-bottom:1.75rem;">
+  <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-share-nodes" style="color:var(--gold);margin-right:8px;"></i>Your Referral Link</div>
+  <p style="font-size:.87rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;">Share your unique referral link and earn a commission on every investment made by your referrals.</p>
+  <div style="background:var(--navy-3);border-radius:var(--radius);padding:1rem;display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+    <i class="fa-solid fa-link" style="color:var(--gold);flex-shrink:0;"></i>
+    <code id="ref-link" style="flex:1;font-size:.82rem;color:var(--gold);word-break:break-all;">{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}</code>
+    <button class="btn btn-outline btn-sm" onclick="copyText(document.getElementById('ref-link').textContent,'Referral link copied!')"><i class="fa-solid fa-copy"></i> Copy</button>
+  </div>
+  <div style="display:flex;gap:9px;flex-wrap:wrap;">
+    <button class="btn btn-outline btn-sm" onclick="copyText('{{ request.user.referral_code }}','Code copied!')"><i class="fa-solid fa-hashtag"></i> Copy Code</button>
+    <a href="https://twitter.com/intent/tweet?text=Join+InvestPro+and+start+earning!+Use+my+referral:+{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-brands fa-x-twitter"></i> Share</a>
+    <a href="https://wa.me/?text=Join+InvestPro+and+earn+daily+returns!+{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-brands fa-whatsapp" style="color:var(--green);"></i> WhatsApp</a>
+  </div>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+  <!-- REFERRAL LIST -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-users" style="color:var(--gold);margin-right:8px;"></i>Your Referrals</div></div>
+    {% if referrals %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Joined</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for ref in referrals %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div class="avatar-ph" style="width:30px;height:30px;font-size:.72rem;">{{ ref.initials }}</div>
+              <div><div style="font-size:.86rem;font-weight:600;">{{ ref.first_name }} {{ ref.last_name|slice:":1" }}.</div><div style="font-size:.74rem;color:var(--faint);">{{ ref.email|truncatechars:28 }}</div></div>
+            </div>
+          </td>
+          <td style="font-size:.82rem;color:var(--faint);">{{ ref.date_joined|date:"M d, Y" }}</td>
+          <td><span class="badge {% if ref.is_active %}badge-success{% else %}badge-danger{% endif %}"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i> {% if ref.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-users fa-2x empty-state-icon"></i><div class="empty-state-title">No referrals yet</div><div class="empty-state-text">Share your referral link to start earning commissions.</div></div>
+    {% endif %}
+  </div>
+  <!-- EARNINGS -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-coins" style="color:var(--gold);margin-right:8px;"></i>Referral Earnings</div></div>
+    {% if earnings %}
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      {% for e in earnings %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem;background:var(--navy-3);border-radius:var(--radius);">
+        <div><div style="font-size:.85rem;font-weight:600;">{{ e.description }}</div><div style="font-size:.74rem;color:var(--faint);">{{ e.created_at|date:"M d, Y" }}</div></div>
+        <div style="font-weight:700;color:var(--green);">+${{ e.amount|floatformat:2 }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-hand-holding-dollar fa-2x empty-state-icon"></i><div class="empty-state-title">No earnings yet</div><div class="empty-state-text">Earnings appear when your referrals invest.</div></div>
+    {% endif %}
+    <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s);display:flex;justify-content:space-between;font-size:.9rem;">
+      <span style="color:var(--muted);">Total Earned</span>
+      <span style="font-family:var(--ff-d);font-weight:800;font-size:1.1rem;color:var(--gold);">${{ total_earn|floatformat:2 }}</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -28,25 +28,14 @@
 <div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon"><i class="fa-solid fa-gem"></i></div><div class="empty-state-title">No plans available</div><div class="empty-state-text">Investment plans will be available soon.</div></div>
 {% endfor %}
 </div>
-<!-- COMPARISON TABLE -->
-<div class="card" style="margin-bottom:1.75rem;">
-  <div class="card-header"><div class="card-title">Plan Comparison</div></div>
-  <div class="table-wrap"><table><thead><tr><th>Feature</th>{% for p in plans %}<th>{{ p.icon }} {{ p.name }}</th>{% endfor %}</tr></thead><tbody>
-    <tr><td>Daily ROI</td>{% for p in plans %}<td style="color:var(--green);font-weight:600;">{{ p.daily_roi }}%</td>{% endfor %}</tr>
-    <tr><td>Duration</td>{% for p in plans %}<td>{{ p.duration_days }} days</td>{% endfor %}</tr>
-    <tr><td>Min Deposit</td>{% for p in plans %}<td>${{ p.min_amount|floatformat:0 }}</td>{% endfor %}</tr>
-    <tr><td>Capital Return</td>{% for p in plans %}<td style="color:var(--green);"><i class="fa-solid fa-check"></i> Yes</td>{% endfor %}</tr>
-    <tr><td>Referral Bonus</td>{% for p in plans %}<td>{{ p.referral_bonus_pct }}%</td>{% endfor %}</tr>
-  </tbody></table></div>
-</div>
 <!-- ROI CALCULATOR -->
 <div class="card card-gold">
-  <div class="card-header"><div class="card-title"><i class="fa-solid fa-chart-pie"></i> ROI Calculator</div><span class="badge badge-gold">Live Preview</span></div>
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-chart-pie"></i>&nbsp; ROI Calculator</div><span class="badge badge-gold">Live Preview</span></div>
   <form method="post" action="{% url 'calculator' %}">{% csrf_token %}
     <div class="grid-2">
       <div>
         <div class="form-group"><label class="form-label">Investment Amount ($)</label><div class="input-wrap"><span class="input-icon" style="font-weight:700;">$</span><input type="number" name="amount" id="calc-amount" class="form-control" placeholder="5000" min="1" oninput="calcLocal()"></div></div>
-        <div class="form-group"><label class="form-label">Select Plan</label><select name="plan_slug" id="calc-plan" class="form-control" onchange="calcLocal()">{% for p in plans %}<option value="{{ p.slug }}" data-roi="{{ p.daily_roi }}" data-days="{{ p.duration_days }}">{{ p.icon }} {{ p.name }} — {{ p.daily_roi }}%/day</option>{% endfor %}</select></div>
+        <div class="form-group"><label class="form-label">Select Plan</label><select name="plan_slug" id="calc-plan" class="form-control" onchange="calcLocal()">{% for p in plans %}<option value="{{ p.slug }}" data-roi="{{ p.daily_roi }}" data-days="{{ p.duration_days }}"><i class="fa-solid fa-{{ p.fa_icon }}"></i> {{ p.name }} — {{ p.daily_roi }}%/day</option>{% endfor %}</select></div>
       </div>
       <div style="background:var(--navy-3);border-radius:var(--radius);padding:1.25rem;display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;justify-content:space-between;font-size:.87rem;"><span style="color:var(--faint);">Daily Profit</span><span style="font-weight:700;color:var(--green);" id="c-daily">$0.00</span></div>

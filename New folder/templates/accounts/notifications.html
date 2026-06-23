@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Notifications</h1><p class="page-subtitle">{{ unread_count }} unread notification{{ unread_count|pluralize }}</p></div>
+<form method="post" style="display:flex;gap:9px;">{% csrf_token %}<input type="hidden" name="action" value="mark_all"><button type="submit" class="btn btn-ghost btn-sm"><i class="fa-solid fa-check"></i> Mark all read</button></form></div>
+<div class="card">
+  {% for n in notifs %}
+  <div class="notif-item" style="{% if not n.is_read %}background:rgba(201,168,76,.03);{% endif %}">
+    <div class="notif-icon-wrap" style="background:var(--{{ n.color }}-bg,var(--blue-bg));color:var(--{{ n.color }},var(--blue));">{{ n.icon }}</div>
+    <div class="notif-content">
+      <div class="notif-title">{{ n.title }}</div>
+      <div class="notif-body">{{ n.body }}</div>
+      <div class="notif-time">{{ n.created_at|timesince }} ago</div>
+    </div>
+    {% if not n.is_read %}<div class="notif-unread-dot"></div>{% endif %}
+  </div>
+  {% empty %}<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-bell"></i></div><div class="empty-state-title">No notifications yet</div></div>{% endfor %}
+</div>
+{% endblock %}

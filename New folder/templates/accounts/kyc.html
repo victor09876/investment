@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% load custom_filters %}
+{% block title %}KYC Verification{% endblock %}
+{% block page_title %}KYC Verification{% endblock %}
+{% block content %}
+<div style="max-width:1100px;">
+  <!-- STATUS -->
+  {% if submission %}
+  <div class="alert {% if submission.status == 'approved' %}alert-success{% elif submission.status == 'rejected' %}alert-danger{% else %}alert-warning{% endif %}" style="margin-bottom:1.5rem;">
+    <i class="fa-solid {% if submission.status == 'approved' %}fa-circle-check{% elif submission.status == 'rejected' %}fa-circle-xmark{% else %}fa-clock{% endif %} fa-lg"></i>
+    <div>
+      <strong>KYC {{ submission.get_status_display }}</strong>
+      {% if submission.admin_note %}<div style="margin-top:4px;font-size:.85rem;">Note: {{ submission.admin_note }}</div>{% endif %}
+      {% if submission.status == 'approved' %}<div style="margin-top:4px;font-size:.85rem;">Your identity has been verified. You now have full access.</div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not submission or submission.status == 'rejected' %}
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:1.4rem;align-items:start;">
+    <!-- INSTRUCTIONS -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-id-card" style="color:var(--gold);margin-right:8px;"></i>Identity Verification</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.75;margin-bottom:1.25rem;">Complete your KYC verification to unlock full platform features including higher withdrawal limits and exclusive investment plans.</p>
+      <div style="display:flex;flex-direction:column;gap:.75rem;">
+        <div class="kyc-step"><div class="kyc-step-num">1</div><div><div style="font-weight:600;font-size:.86rem;">Fill in your details</div><div style="font-size:.77rem;color:var(--faint);">Provide accurate details as they appear on your documents</div></div></div>
+        <div class="kyc-step"><div class="kyc-step-num">2</div><div><div style="font-weight:600;font-size:.86rem;">Upload documents</div><div style="font-size:.77rem;color:var(--faint);">Clear photos of government-issued ID and proof of address</div></div></div>
+        <div class="kyc-step"><div class="kyc-step-num">3</div><div><div style="font-weight:600;font-size:.86rem;">Wait for review</div><div style="font-size:.77rem;color:var(--faint);">1-3 business days. You'll be notified once reviewed.</div></div></div>
+      </div>
+    </div>
+
+    {% if fields %}
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1.4rem;"><i class="fa-solid fa-file-pen" style="color:var(--gold);margin-right:8px;"></i>Verification Form</div>
+      <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem 1.25rem;">
+        {% for field in fields %}
+        <div class="form-group" style="{% if field.field_type == 'textarea' %}grid-column:1/-1;{% endif %}margin-bottom:0;">
+          <label class="form-label">{{ field.label }}{% if field.is_required %} <span style="color:var(--red);">*</span>{% endif %}</label>
+          {% if field.field_type == 'textarea' %}
+            <textarea name="field_{{ field.id }}" class="form-control" placeholder="{{ field.placeholder }}" rows="3" {% if field.is_required %}required{% endif %}>{{ answers|getitem:field.id|default:'' }}</textarea>
+          {% elif field.field_type == 'select' %}
+            <select name="field_{{ field.id }}" class="form-control" {% if field.is_required %}required{% endif %}>
+              <option value="">Select an option</option>
+              {% for opt in field.get_options_list %}<option value="{{ opt }}" {% if answers|getitem:field.id == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
+            </select>
+          {% elif field.field_type in 'file,image' %}
+            <input type="{{ field.field_type }}" name="field_{{ field.id }}" class="form-control" {% if field.is_required and not answers|getitem:field.id %}required{% endif %}>
+            {% if answers|getitem:field.id and answers|getitem:field.id.file_value %}<p class="form-hint"><i class="fa-solid fa-paperclip"></i> Previously uploaded: {{ answers|getitem:field.id.file_value.name|slice:"5:" }}</p>{% endif %}
+          {% else %}
+            <input type="{{ field.field_type }}" name="field_{{ field.id }}" class="form-control" placeholder="{{ field.placeholder }}" value="{{ answers|getitem:field.id|default:'' }}" {% if field.is_required %}required{% endif %}>
+          {% endif %}
+        </div>
+        {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="margin-top:1.5rem;"><i class="fa-solid fa-paper-plane"></i> Submit KYC Application</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-clipboard-list fa-3x empty-state-icon"></i><div class="empty-state-title">No KYC fields configured</div><div class="empty-state-text">The administrator has not set up KYC fields yet. Please check back later.</div></div>
+    {% endif %}
+  </div>
+
+  {% elif submission.status == 'pending' %}
+  <div class="card"><div style="text-align:center;padding:2rem;"><i class="fa-solid fa-clock fa-3x" style="color:var(--amber);margin-bottom:1rem;"></i><h3 style="font-family:var(--ff-d);margin-bottom:.75rem;">Under Review</h3><p style="color:var(--muted);font-size:.88rem;line-height:1.7;">Your KYC documents have been submitted and are under review. You will receive a notification once the review is complete (typically 1-3 business days).</p></div></div>
+
+  {% elif submission.status == 'approved' %}
+  <div class="card"><div style="text-align:center;padding:2rem;"><i class="fa-solid fa-circle-check fa-3x" style="color:var(--green);margin-bottom:1rem;"></i><h3 style="font-family:var(--ff-d);margin-bottom:.75rem;">Verified</h3><p style="color:var(--muted);font-size:.88rem;line-height:1.7;">Your identity has been successfully verified. You have full access to all platform features.</p></div></div>
+  {% endif %}
+</div>
+{% endblock %}

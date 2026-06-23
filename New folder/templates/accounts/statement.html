@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% load custom_filters %}
+{% block title %}Account Statement{% endblock %}
+{% block page_title %}Account Statement{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Account Statement</h1><p class="page-subtitle">Generate and export your transaction records</p></div>
+  <div style="display:flex;gap:9px;">
+    <a href="?period={{ period }}&from={{ date_from }}&to={{ date_to }}&format=csv" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Export CSV</a>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="statement-filter-card">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <div>
+      <label class="form-label">Period</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="?period=daily" class="btn {% if period == 'daily' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Daily</a>
+        <a href="?period=weekly" class="btn {% if period == 'weekly' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Weekly</a>
+        <a href="?period=monthly" class="btn {% if period == 'monthly' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Monthly</a>
+        <a href="?period=yearly" class="btn {% if period == 'yearly' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Yearly</a>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <div><label class="form-label">From</label><input type="date" name="from" class="form-control" value="{{ date_from }}" style="min-width:140px;"></div>
+      <div><label class="form-label">To</label><input type="date" name="to" class="form-control" value="{{ date_to }}" style="min-width:140px;"></div>
+      <button type="submit" name="period" value="custom" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Filter</button>
+    </div>
+  </form>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="grid-4" style="margin-bottom:1.75rem;">
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-arrow-down"></i></div><div class="s-label">Deposits</div><div class="s-value">${{ summary.deposits|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--red-bg);color:var(--red);"><i class="fa-solid fa-arrow-up"></i></div><div class="s-label">Withdrawals</div><div class="s-value">${{ summary.withdrawals|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-coins"></i></div><div class="s-label">ROI Earned</div><div class="s-value" style="color:var(--gold);">${{ summary.roi|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-users"></i></div><div class="s-label">Referral Earnings</div><div class="s-value">${{ summary.referral|floatformat:2 }}</div></div>
+</div>
+
+<!-- STATEMENT TABLE -->
+<div class="card">
+  <div class="card-header"><div class="card-title"><i class="fa-solid fa-file-invoice" style="color:var(--gold);margin-right:8px;"></i>Statement — {% if date_from %}{{ date_from }} to {{ date_to }}{% else %}{{ period|title }}{% endif %}</div><span class="badge badge-gold">{{ transactions.count }} records</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>ID</th><th>Description</th><th>Credit</th><th>Debit</th><th>Balance</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td style="font-size:.81rem;color:var(--faint);">{{ t.created_at|date:"M d, Y" }}</td>
+        <td><code style="font-size:.77rem;color:var(--faint);">#{{ t.txn_id }}</code></td>
+        <td>{{ t.description }}</td>
+        <td style="color:var(--green);font-weight:600;">{% if t.is_credit %}+${{ t.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+        <td style="color:var(--red);font-weight:600;">{% if not t.is_credit %}-${{ t.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+        <td style="font-weight:600;color:var(--gold);">—</td>
+        <td><span class="badge {{ t.status_class }}">{{ t.get_status_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;color:var(--faint);padding:3rem;"><i class="fa-solid fa-file-invoice fa-2x" style="margin-bottom:.75rem;opacity:.3;display:block;"></i>No transactions for this period.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{% endblock %} — {{ site_settings.site_name|default:"InvestPro" }}</title>
+{% if branding.favicon %}<link rel="icon" type="image/x-icon" href="{{ branding.favicon.url }}">{% endif %}
+{% if settings.custom_css %}<style>{{ settings.custom_css }}</style>{% endif %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/icons.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if messages %}
+<div id="django-messages" style="display:none;">
+  {% for m in messages %}<span data-type="{{ m.tags }}" data-msg="{{ m.message }}"></span>{% endfor %}
+</div>
+{% endif %}
+{% block body %}{% endblock %}
+<div id="toast-container"></div>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const msgs = document.querySelectorAll('#django-messages span');
+  msgs.forEach(s=>{
+    const type = s.dataset.type.includes('error')||s.dataset.type.includes('danger') ? 'danger'
+               : s.dataset.type.includes('warning') ? 'warning'
+               : s.dataset.type.includes('info') ? 'info' : 'success';
+    showToast(s.dataset.msg, type);
+  });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

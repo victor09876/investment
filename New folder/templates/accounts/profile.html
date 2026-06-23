@@ -1,0 +1,98 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="grid-2" style="align-items:start;">
+  <div style="display:flex;flex-direction:column;gap:1.4rem;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Personal Information</div></div>
+      {% if form.errors %}<div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> Please fix the errors below.</div>{% endif %}
+      <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}">{% if form.first_name.errors %}<p class="form-error">{{ form.first_name.errors.0 }}</p>{% endif %}</div>
+          <div class="form-group"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}">{% if form.last_name.errors %}<p class="form-error">{{ form.last_name.errors.0 }}</p>{% endif %}</div>
+        </div>
+        <div class="form-group"><label class="form-label">Profile Picture</label>
+          <div style="display:flex;align-items:center;gap:14px;">
+            {% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" class="avatar" style="width:56px;height:56px;">{% else %}<div class="avatar-ph" style="width:56px;height:56px;font-size:1.2rem;">{{ request.user.initials }}</div>{% endif %}
+            <input type="file" name="avatar" class="form-control" accept="image/*" style="flex:1;">
+          </div>
+          <p class="form-hint">JPG or PNG, square images work best.</p>
+        </div>
+        <div class="form-group"><label class="form-label">Country</label><select name="country" id="prof-country" class="form-control"><option value="">Select country</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">State / Province</label><select name="state" id="prof-state" class="form-control"><option value="">Select country first</option></select></div>
+          <div class="form-group"><label class="form-label">Phone</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="prof-dial" name="dial_code" class="form-control" value="{{ request.user.dial_code }}" placeholder="+--" readonly style="width:80px;text-align:center;background:var(--elevated);flex-shrink:0;">
+              <input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" style="flex:1;">
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Address</label><textarea name="address" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" name="date_of_birth" class="form-control" value="{{ form.date_of_birth.value|default:'' }}"></div>
+          <div class="form-group"><label class="form-label">Gender</label><select name="gender" class="form-control"><option value="">Prefer not to say</option><option {% if form.gender.value == 'Male' %}selected{% endif %}>Male</option><option {% if form.gender.value == 'Female' %}selected{% endif %}>Female</option></select></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Change Password</div></div>
+      <a href="{% url 'change_password' %}" class="btn btn-outline"><i class="fa-solid fa-lock"></i> Change Password</a>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Withdrawal PIN</div></div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">{% if request.user.withdrawal_pin %}PIN is set. Change it below.{% else %}No PIN set. Set one to enable withdrawals.{% endif %}</p>
+      <a href="{% url 'set_pin' %}" class="btn btn-outline"><i class="fa-solid fa-key"></i> {% if request.user.withdrawal_pin %}Change{% else %}Set{% endif %} PIN</a>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1.4rem;">
+    <div class="card card-gold">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+        <div class="avatar-ph" style="width:64px;height:64px;font-size:1.5rem;">{{ request.user.initials }}</div>
+        <div><div style="font-family:var(--ff-d);font-size:1.2rem;font-weight:700;">{{ request.user.full_name }}</div><div style="font-size:.83rem;color:var(--faint);">{{ request.user.email }}</div><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;"><span class="badge badge-gold">Member</span>{% if request.user.is_kyc_verified %}<span class="badge badge-success"><i class="fa-solid fa-check"></i> Verified</span>{% elif request.user.kyc_status == 'not_submitted' %}<span class="badge badge-info"><i class="fa-solid fa-circle-info"></i> Not Submitted</span>{% elif request.user.kyc_status == 'rejected' %}<span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Rejected</span>{% else %}<span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Under Review</span>{% endif %}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;text-align:center;">
+        <div><div style="font-family:var(--ff-d);font-weight:700;color:var(--gold);">${{ request.user.wallet_balance|floatformat:2 }}</div><div style="font-size:.72rem;color:var(--faint);">Balance</div></div>
+        <div><div style="font-family:var(--ff-d);font-weight:700;color:var(--green);">${{ request.user.profit_balance|floatformat:2 }}</div><div style="font-size:.72rem;color:var(--faint);">Profit</div></div>
+        <div><div style="font-family:var(--ff-d);font-weight:700;">{{ inv_stats.count|default:0 }}</div><div style="font-size:.72rem;color:var(--faint);">Investments</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Referral Program</div><span class="badge badge-gold">Active</span></div>
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Share your link and earn a bonus on every investment your referrals make!</p>
+      <div style="background:var(--navy-3);border-radius:var(--radius);padding:.9rem;display:flex;align-items:center;gap:9px;margin-bottom:1rem;">
+        <code style="flex:1;font-size:.78rem;color:var(--gold);word-break:break-all;">{{ request.get_host }}/register/?ref={{ request.user.referral_code }}</code>
+        <button class="btn btn-outline btn-sm" onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/register/?ref={{ request.user.referral_code }}','Link copied!')"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div style="display:flex;gap:1rem;">
+        <div style="flex:1;text-align:center;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;"><div style="font-family:var(--ff-d);font-weight:700;color:var(--gold);">{{ request.user.referrals.count }}</div><div style="font-size:.72rem;color:var(--faint);">Referrals</div></div>
+        <div style="flex:1;text-align:center;background:var(--navy-3);border-radius:var(--radius);padding:.75rem;"><div style="font-family:var(--ff-d);font-weight:700;">{{ request.user.referral_code }}</div><div style="font-size:.72rem;color:var(--faint);">Your Code</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Account Info</div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:.85rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Email</span><span>{{ request.user.email }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Member Since</span><span>{{ request.user.date_joined|date:"M d, Y" }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">KYC Status</span><span class="badge {% if request.user.is_kyc_verified %}badge-success{% elif request.user.kyc_status == 'rejected' %}badge-danger{% elif request.user.kyc_status == 'not_submitted' %}badge-info{% else %}badge-warning{% endif %}">{{ request.user.get_kyc_status_display }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Withdrawal PIN</span><span class="badge {% if request.user.withdrawal_pin %}badge-success{% else %}badge-danger{% endif %}">{% if request.user.withdrawal_pin %}Set{% else %}Not Set{% endif %}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/countries.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  populateCountrySelect('prof-country','{{ request.user.country }}');
+  onCountryChange('prof-country','prof-dial','prof-state','{{ request.user.state }}');
+  document.getElementById('prof-country').addEventListener('change', ()=>{
+    onCountryChange('prof-country','prof-dial','prof-state');
+  });
+});
+</script>
+{% endblock %}

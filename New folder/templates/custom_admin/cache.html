@@ -1,0 +1,55 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Clear Cache{% endblock %}
+{% block page_title %}System Cache{% endblock %}
+{% block content %}
+<div style="max-width:1000px;">
+  <div class="page-header"><div><h1 class="page-title">Clear System Cache</h1><p class="page-subtitle">Free up resources and refresh cached data</p></div></div>
+  <div class="grid-2" style="margin-bottom:1.4rem;align-items:start;">
+    <div class="card">
+      <div style="text-align:center;padding:1rem 0;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:var(--blue);margin:0 auto 1.25rem;"><i class="fa-solid fa-broom"></i></div>
+        <h3 style="font-family:var(--ff-d);font-size:1.15rem;margin-bottom:.5rem;">Clear All Cache</h3>
+        <p style="color:var(--muted);font-size:.86rem;line-height:1.7;margin-bottom:1.5rem;max-width:380px;margin-left:auto;margin-right:auto;">This will clear application, route, and configuration cache, compiled views and services, temporary files, session cache, and package cache.</p>
+        <button class="btn btn-primary btn-lg" onclick="openModal('confirm-cache-modal')"><i class="fa-solid fa-broom"></i> Clear All Cache</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-layer-group" style="color:var(--gold);margin-right:8px;"></i>What Gets Cleared</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;background:var(--navy-3);border-radius:var(--radius);"><i class="fa-solid fa-route" style="color:var(--blue);width:18px;"></i><div><div style="font-size:.84rem;font-weight:600;">Route Cache</div><div style="font-size:.73rem;color:var(--faint);">URL routing tables</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;background:var(--navy-3);border-radius:var(--radius);"><i class="fa-solid fa-gears" style="color:var(--amber);width:18px;"></i><div><div style="font-size:.84rem;font-weight:600;">Configuration Cache</div><div style="font-size:.73rem;color:var(--faint);">Site settings &amp; environment config</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;background:var(--navy-3);border-radius:var(--radius);"><i class="fa-solid fa-file-code" style="color:var(--green);width:18px;"></i><div><div style="font-size:.84rem;font-weight:600;">Compiled Views</div><div style="font-size:.73rem;color:var(--faint);">Pre-rendered template fragments</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;background:var(--navy-3);border-radius:var(--radius);"><i class="fa-solid fa-database" style="color:var(--blue);width:18px;"></i><div><div style="font-size:.84rem;font-weight:600;">Session Cache</div><div style="font-size:.73rem;color:var(--faint);">Temporary user session data</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;background:var(--navy-3);border-radius:var(--radius);"><i class="fa-solid fa-box-archive" style="color:var(--amber);width:18px;"></i><div><div style="font-size:.84rem;font-weight:600;">Package &amp; Temp Files</div><div style="font-size:.73rem;color:var(--faint);">Build artifacts and temp storage</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-clock-rotate-left" style="color:var(--gold);margin-right:8px;"></i>Last Cache Clear</div>
+    {% if last_clear %}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+      <div style="padding:.9rem;background:var(--navy-3);border-radius:var(--radius);"><div style="font-size:.7rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Cleared At</div><div style="font-weight:600;font-size:.9rem;">{{ last_clear.cleared_at|date:"M d, Y H:i:s" }}</div></div>
+      <div style="padding:.9rem;background:var(--navy-3);border-radius:var(--radius);"><div style="font-size:.7rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Cleared By</div><div style="font-weight:600;font-size:.9rem;color:var(--gold);">{{ last_clear.cleared_by.full_name|default:"System" }}</div></div>
+      <div style="padding:.9rem;background:var(--navy-3);border-radius:var(--radius);"><div style="font-size:.7rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Details</div><div style="font-weight:600;font-size:.9rem;">{{ last_clear.details }}</div></div>
+    </div>
+    {% else %}
+    <div style="text-align:center;color:var(--faint);padding:1rem;font-size:.86rem;"><i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>Cache has not been cleared yet.</div>
+    {% endif %}
+  </div>
+</div>
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay confirm-modal" id="confirm-cache-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header"><div class="modal-title">Clear Cache</div><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="modal-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-broom"></i></div>
+      <h3>Clear All System Cache?</h3>
+      <p>This will clear all cached data and temporary files. The system will rebuild caches as needed.</p>
+    </div>
+    <div style="display:flex;gap:9px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('confirm-cache-modal')"><i class="fa-solid fa-xmark"></i> Cancel</button>
+      <form method="post" style="flex:2;">{% csrf_token %}<button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-broom"></i> Confirm Clear</button></form>
+    </div>
+  </div>
+</div>
+{% endblock %}

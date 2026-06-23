@@ -3,11 +3,11 @@
 {% block title %}KYC Verification{% endblock %}
 {% block page_title %}KYC Verification{% endblock %}
 {% block content %}
-<div style="max-width:1100px;">
+<div>
   <!-- STATUS -->
   {% if submission %}
   <div class="alert {% if submission.status == 'approved' %}alert-success{% elif submission.status == 'rejected' %}alert-danger{% else %}alert-warning{% endif %}" style="margin-bottom:1.5rem;">
-    <i class="fa-solid {% if submission.status == 'approved' %}fa-circle-check{% elif submission.status == 'rejected' %}fa-circle-xmark{% else %}fa-clock{% endif %} fa-lg"></i>
+    <div><i class="fa-solid {% if submission.status == 'approved' %}fa-circle-check{% elif submission.status == 'rejected' %}fa-circle-xmark{% else %}fa-clock{% endif %} fa-lg"></i></div>
     <div>
       <strong>KYC {{ submission.get_status_display }}</strong>
       {% if submission.admin_note %}<div style="margin-top:4px;font-size:.85rem;">Note: {{ submission.admin_note }}</div>{% endif %}
@@ -17,9 +17,9 @@
   {% endif %}
 
   {% if not submission or submission.status == 'rejected' %}
-  <div style="display:grid;grid-template-columns:300px 1fr;gap:1.4rem;align-items:start;">
+  <div>
     <!-- INSTRUCTIONS -->
-    <div class="card">
+    <div class="card" style="margin-bottom:2rem;">
       <div class="card-title" style="margin-bottom:1rem;"><i class="fa-solid fa-id-card" style="color:var(--gold);margin-right:8px;"></i>Identity Verification</div>
       <p style="font-size:.85rem;color:var(--muted);line-height:1.75;margin-bottom:1.25rem;">Complete your KYC verification to unlock full platform features including higher withdrawal limits and exclusive investment plans.</p>
       <div style="display:flex;flex-direction:column;gap:.75rem;">
@@ -28,37 +28,148 @@
         <div class="kyc-step"><div class="kyc-step-num">3</div><div><div style="font-weight:600;font-size:.86rem;">Wait for review</div><div style="font-size:.77rem;color:var(--faint);">1-3 business days. You'll be notified once reviewed.</div></div></div>
       </div>
     </div>
+    
+{% if fields %}
+<div class="card bottom-cards">
 
-    {% if fields %}
-    <div class="card">
-      <div class="card-title" style="margin-bottom:1.4rem;"><i class="fa-solid fa-file-pen" style="color:var(--gold);margin-right:8px;"></i>Verification Form</div>
-      <form method="post" enctype="multipart/form-data">{% csrf_token %}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem 1.25rem;">
-        {% for field in fields %}
-        <div class="form-group" style="{% if field.field_type == 'textarea' %}grid-column:1/-1;{% endif %}margin-bottom:0;">
-          <label class="form-label">{{ field.label }}{% if field.is_required %} <span style="color:var(--red);">*</span>{% endif %}</label>
-          {% if field.field_type == 'textarea' %}
-            <textarea name="field_{{ field.id }}" class="form-control" placeholder="{{ field.placeholder }}" rows="3" {% if field.is_required %}required{% endif %}>{{ answers|getitem:field.id|default:'' }}</textarea>
-          {% elif field.field_type == 'select' %}
-            <select name="field_{{ field.id }}" class="form-control" {% if field.is_required %}required{% endif %}>
-              <option value="">Select an option</option>
-              {% for opt in field.get_options_list %}<option value="{{ opt }}" {% if answers|getitem:field.id == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
-            </select>
-          {% elif field.field_type in 'file,image' %}
-            <input type="{{ field.field_type }}" name="field_{{ field.id }}" class="form-control" {% if field.is_required and not answers|getitem:field.id %}required{% endif %}>
-            {% if answers|getitem:field.id and answers|getitem:field.id.file_value %}<p class="form-hint"><i class="fa-solid fa-paperclip"></i> Previously uploaded: {{ answers|getitem:field.id.file_value.name|slice:"5:" }}</p>{% endif %}
-          {% else %}
-            <input type="{{ field.field_type }}" name="field_{{ field.id }}" class="form-control" placeholder="{{ field.placeholder }}" value="{{ answers|getitem:field.id|default:'' }}" {% if field.is_required %}required{% endif %}>
+  <div class="card-title" style="margin-bottom:1.4rem;">
+    <i class="fa-solid fa-file-pen" style="color:var(--gold);margin-right:8px;"></i>
+    Verification Form
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem 1.25rem;">
+
+      {% for field in fields %}
+      <div class="form-group"
+           style="{% if field.field_type == 'textarea' %}grid-column:1/-1;{% endif %}margin-bottom:0;">
+
+        <label class="form-label">
+          {{ field.label }}
+          {% if field.is_required %}
+            <span style="color:var(--red);">*</span>
           {% endif %}
+        </label>
+
+        {% if field.field_type == 'textarea' %}
+          <textarea name="field_{{ field.id }}"
+                    class="form-control"
+                    placeholder="{{ field.placeholder }}"
+                    rows="3"
+                    {% if field.is_required %}required{% endif %}>{{ answers|getitem:field.id|default:'' }}</textarea>
+
+        {% elif field.field_type == 'select' %}
+          <select name="field_{{ field.id }}"
+                  class="form-control"
+                  {% if field.is_required %}required{% endif %}>
+            <option value="">Select an option</option>
+            {% for opt in field.get_options_list %}
+              <option value="{{ opt }}"
+                {% if answers|getitem:field.id == opt %}selected{% endif %}>
+                {{ opt }}
+              </option>
+            {% endfor %}
+          </select>
+
+        {% elif field.field_type == 'file' or field.field_type == 'image' %}
+
+        <!-- DROPZONE -->
+        <div class="card" style="margin-top:0.5rem;">
+
+          <div class="drop-zone"
+               data-field="{{ field.id }}"
+               style="border:2px dashed var(--border-s);
+                      border-radius:var(--radius);
+                      padding:2rem;
+                      text-align:center;
+                      cursor:pointer;
+                      transition:0.2s;">
+
+            <div style="font-size:1.6rem;margin-bottom:6px;">
+              <i class="fa-solid fa-paperclip"></i>
+            </div>
+
+            <div style="font-weight:600;font-size:.85rem;">
+              Click to upload or drag & drop
+            </div>
+
+            <div style="font-size:.75rem;color:var(--faint);margin-top:4px;">
+              PNG, JPG, PDF up to 5MB
+            </div>
+
+            <input type="file"
+                   id="file-{{ field.id }}"
+                   name="field_{{ field.id }}"
+                   accept="image/*,.pdf"
+                   style="display:none;"
+                   onchange="handleFile(this, '{{ field.id }}')">
+
+          </div>
+
+          <!-- PREVIEW -->
+          <div id="preview-{{ field.id }}"
+               style="display:none;
+                      margin-top:.8rem;
+                      padding:10px;
+                      background:var(--navy-3);
+                      border-radius:var(--radius);
+                      display:flex;
+                      align-items:center;
+                      gap:10px;
+                      font-size:.83rem;">
+
+            <i class="fa-solid fa-file"></i>
+
+            <span id="file-name-{{ field.id }}" style="flex:1;"></span>
+
+            <button type="button"
+                    onclick="removeFile('{{ field.id }}')"
+                    style="background:none;
+                           border:none;
+                           color:var(--red);
+                           cursor:pointer;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+
+          </div>
+
         </div>
-        {% endfor %}
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg" style="margin-top:1.5rem;"><i class="fa-solid fa-paper-plane"></i> Submit KYC Application</button>
-      </form>
+
+        {% else %}
+          <input type="{{ field.field_type }}"
+                 name="field_{{ field.id }}"
+                 class="form-control"
+                 placeholder="{{ field.placeholder }}"
+                 value="{{ answers|getitem:field.id|default:'' }}"
+                 {% if field.is_required %}required{% endif %}>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+
     </div>
-    {% else %}
-    <div class="empty-state"><i class="fa-solid fa-clipboard-list fa-3x empty-state-icon"></i><div class="empty-state-title">No KYC fields configured</div><div class="empty-state-text">The administrator has not set up KYC fields yet. Please check back later.</div></div>
-    {% endif %}
+
+    <button type="submit"
+            class="btn btn-primary btn-lg"
+            style="margin-top:1.5rem;">
+      <i class="fa-solid fa-paper-plane"></i>
+      Submit KYC Application
+    </button>
+
+  </form>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <i class="fa-solid fa-clipboard-list fa-3x empty-state-icon"></i>
+  <div class="empty-state-title">No KYC fields configured</div>
+  <div class="empty-state-text">
+    The administrator has not set up KYC fields yet. Please check back later.
+  </div>
+</div>
+{% endif %}
   </div>
 
   {% elif submission.status == 'pending' %}
@@ -68,4 +179,42 @@
   <div class="card"><div style="text-align:center;padding:2rem;"><i class="fa-solid fa-circle-check fa-3x" style="color:var(--green);margin-bottom:1rem;"></i><h3 style="font-family:var(--ff-d);margin-bottom:.75rem;">Verified</h3><p style="color:var(--muted);font-size:.88rem;line-height:1.7;">Your identity has been successfully verified. You have full access to all platform features.</p></div></div>
   {% endif %}
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function handleFile(input, id) {
+    const file = input.files[0];
+    const preview = document.getElementById('preview-' + id);
+    const name = document.getElementById('file-name-' + id);
+
+    if (file) {
+        name.textContent = file.name;
+        preview.style.display = 'flex';
+    }
+}
+
+function removeFile(id) {
+    const input = document.getElementById('file-' + id);
+    const preview = document.getElementById('preview-' + id);
+
+    input.value = "";
+    preview.style.display = 'none';
+}
+
+/* click dropzone */
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('click', function () {
+        const id = this.dataset.field;
+        document.getElementById('file-' + id).click();
+    });
+
+    zone.addEventListener('mouseenter', function () {
+        this.style.borderColor = 'var(--gold)';
+    });
+
+    zone.addEventListener('mouseleave', function () {
+        this.style.borderColor = 'var(--border-s)';
+    });
+});
+</script>
 {% endblock %}

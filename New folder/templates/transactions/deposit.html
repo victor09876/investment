@@ -1,0 +1,187 @@
+{% extends 'layout.html' %}
+{% block title %}Deposit{% endblock %}
+{% block page_title %}Deposit Funds{% endblock %}
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;">
+  <!-- LEFT -->
+  <div>
+    <form method="post" enctype="multipart/form-data" id="dep-form">{% csrf_token %}
+      <!-- STEP 1: METHOD -->
+      <div class="card" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 1 — Choose Payment Method</div></div>
+        <div class="method-grid method-section">
+          <div class="method-card selected" data-method="bitcoin" data-target="det-crypto" onclick="selectMethod(this,'bitcoin')">
+            <div class="m-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="m-name">Bitcoin</div><div class="m-sub">BTC</div>
+          </div>
+          <div class="method-card" data-method="usdt_trc20" data-target="det-crypto" onclick="selectMethod(this,'usdt_trc20')">
+            <div class="m-icon"><i class="fa-solid fa-money-bill"></i></div><div class="m-name">USDT</div><div class="m-sub">TRC20 / ERC20</div>
+          </div>
+          <div class="method-card" data-method="ethereum" data-target="det-crypto" onclick="selectMethod(this,'ethereum')">
+            <div class="m-icon"><i class="fa-brands fa-ethereum"></i></div><div class="m-name">Ethereum</div><div class="m-sub">ETH</div>
+          </div>
+          <div class="method-card" data-method="paypal" data-target="det-crypto" onclick="selectMethod(this,'paypal')">
+            <div class="m-icon"><i class="fa-brands fa-paypal"></i></div><div class="m-name">PayPal</div><div class="m-sub">Instant</div>
+          </div>
+        </div>
+        <input type="hidden" name="method" id="method-input" value="bitcoin">
+      </div>
+
+      <!-- STEP 2: AMOUNT -->
+      <div class="card" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 2 — Enter Amount</div></div>
+        <div class="form-group">
+          <label class="form-label">Deposit Amount (USD)</label>
+          <div class="input-wrap"><span class="input-icon" style="font-weight:700;">$</span><input type="number" name="amount" id="dep-amount" class="form-control" placeholder="0.00" min="{{ settings.min_deposit }}" step="0.01" oninput="updateSummary()" required></div>
+          <p class="form-hint">Minimum deposit: ${{ settings.min_deposit|floatformat:2 }}</p>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.5rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmt(100)">$100</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmt(500)">$500</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmt(1000)">$1,000</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmt(5000)">$5,000</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setAmt(10000)">$10,000</button>
+        </div>
+
+        <!-- CRYPTO DETAILS -->
+        <div id="det-crypto">
+          <div class="alert alert-info" style="margin-bottom:1rem;"><i class="fa-solid fa-circle-info"></i> Send exact amount in <strong id="coin-name">Bitcoin (BTC)</strong> to the wallet below. Credited after 1 confirmation.</div>
+          <div style="background:var(--navy-3);border-radius:var(--radius);padding:1.1rem;margin-bottom:1rem;">
+            <div style="font-size:.77rem;color:var(--faint);margin-bottom:7px;font-weight:600;">Send to wallet address:</div>
+            <div style="display:flex;align-items:center;gap:9px;">
+              <code id="wallet-addr" style="font-size:.8rem;color:var(--gold);word-break:break-all;flex:1;line-height:1.6;">{{ wallet_map.bitcoin|default:"Contact admin for wallet address" }}</code>
+              <button type="button" class="btn btn-outline btn-sm" onclick="copyText(document.getElementById('wallet-addr').textContent,'Address copied!')"><i class="fa-solid fa-copy"></i></button>
+            </div>
+          </div>
+          <div style="background:var(--amber-bg);border:1px solid rgba(240,165,0,.2);border-radius:var(--radius);padding:.9rem;font-size:.81rem;color:var(--amber);"><i class="fa-solid fa-triangle-exclamation"></i>️ Only send <span id="coin-short">BTC</span> to this address. Wrong coin = permanent loss.</div>
+        </div>
+
+        <!-- BANK DETAILS -->
+      </div>
+
+      <!-- STEP 3: PROOF (hidden for card payments — instant processing) -->
+      <div class="card" id="proof-step" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 3 — Upload Payment Proof</div><span class="badge badge-warning">Required</span></div>
+        <div id="drop-zone" style="border:2px dashed var(--border-s);border-radius:var(--radius);padding:2.25rem;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border-s)'" onclick="document.getElementById('proof-file').click()">
+          <div style="font-size:1.75rem;margin-bottom:7px;"><i class="fa-solid fa-paperclip"></i></div>
+          <div style="font-weight:600;font-size:.88rem;margin-bottom:3px;">Click to upload or drag & drop</div>
+          <div style="font-size:.78rem;color:var(--faint);">PNG, JPG, PDF up to 5MB</div>
+          <input type="file" name="proof_image" id="proof-file" accept="image/*,.pdf" style="display:none;" onchange="handleFile(this)">
+        </div>
+        <div id="file-preview" style="display:none;margin-top:.9rem;padding:11px;background:var(--navy-3);border-radius:var(--radius);display:flex;align-items:center;gap:9px;font-size:.84rem;">
+          <i class="fa-solid fa-file" style="font-size:1.1rem;"></i><span id="file-name" style="flex:1;"></span>
+          <button type="button" onclick="removeFile()" style="background:none;border:none;color:var(--red);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="form-group" id="reference-group" style="margin-top:1rem;margin-bottom:0;">
+          <label class="form-label">Transaction Hash / Reference (optional)</label>
+          <input type="text" name="reference" class="form-control" placeholder="e.g. 0x4f2a...c1 or bank reference">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Submit Deposit Request <i class="fa-solid fa-check"></i></button>
+    </form>
+  </div>
+
+  <!-- RIGHT: SUMMARY -->
+  <div style="display:flex;flex-direction:column;gap:1.15rem;">
+    <div class="card card-gold">
+      <div class="card-title" style="margin-bottom:1.15rem;">Deposit Summary</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:.86rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Amount</span><span id="s-amount" style="font-weight:600;">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Method</span><span id="s-method" style="font-weight:600;">Bitcoin</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Processing</span><span id="s-time" style="font-weight:600;">~30 min</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Fee</span><span style="font-weight:600;color:var(--green);">Free</span></div>
+        <div style="height:1px;background:var(--border-s);"></div>
+        <div style="display:flex;justify-content:space-between;font-size:.93rem;"><span>You Receive</span><span id="s-total" style="font-family:var(--ff-d);font-weight:800;color:var(--gold);">$0.00</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1rem;">Current Balance</div>
+      <div style="text-align:center;padding:.75rem 0;">
+        <div style="font-family:var(--ff-d);font-size:1.8rem;font-weight:800;color:var(--gold);">${{ request.user.wallet_balance|floatformat:2 }}</div>
+        <div style="font-size:.77rem;color:var(--faint);margin-top:3px;">Available Wallet Balance</div>
+      </div>
+    </div>
+    <!-- RECENT DEPOSITS -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Recent Deposits</div><a href="{% url 'transactions' %}?type=deposit" style="font-size:.78rem;color:var(--gold);">View All</a></div>
+      {% for t in recent %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;{% if not forloop.last %}border-bottom:1px solid var(--border-s);{% endif %}font-size:.84rem;">
+        <div><div style="font-weight:600;">{{ t.get_method_display }}</div><div style="font-size:.73rem;color:var(--faint);">{{ t.created_at|date:"M d, Y" }}</div>
+          {% if t.status == 'pending' and t.expires_at %}<div class="deposit-countdown" data-expires="{{ t.expires_at|date:'c' }}" style="font-size:.71rem;color:var(--amber);margin-top:2px;font-family:var(--ff-m);"><i class="fa-solid fa-hourglass-half"></i> <span class="cd-text">--:--</span></div>{% endif %}
+        </div>
+        <div style="text-align:right;"><div style="color:var(--green);font-weight:600;">+${{ t.amount|floatformat:2 }}</div><span class="badge {{ t.status_class }}" style="font-size:.67rem;">{{ t.get_status_display }}</span></div>
+      </div>
+      {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:.75rem;">No deposits yet.</div>{% endfor %}
+    </div>
+    <div style="background:var(--green-bg);border:1px solid rgba(46,204,138,.2);border-radius:var(--radius);padding:.9rem;font-size:.8rem;color:var(--green);"><i class="fa-solid fa-lock"></i> All transactions are encrypted with bank-grade SSL security.</div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const wallets={
+  bitcoin:{name:'Bitcoin (BTC)',short:'BTC',addr:'{{ wallet_map.bitcoin|default:"" }}',time:'~30 min'},
+  usdt_trc20:{name:'USDT TRC20',short:'USDT',addr:'{{ wallet_map.usdt_trc20|default:"" }}',time:'~15 min'},
+  usdt_erc20:{name:'USDT ERC20',short:'USDT',addr:'{{ wallet_map.usdt_erc20|default:"" }}',time:'~15 min'},
+  ethereum:{name:'Ethereum (ETH)',short:'ETH',addr:'{{ wallet_map.ethereum|default:"" }}',time:'~20 min'},
+  paypal:{name:'PayPal',short:'USD',addr:'payments@investpro.com',time:'Instant'},
+};
+let selMethod='bitcoin';
+function selectMethod(el,method){
+  document.querySelectorAll('.method-card').forEach(c=>{c.classList.remove('selected');});
+  el.classList.add('selected');
+  selMethod=method;
+  document.getElementById('method-input').value=method;
+  const w=wallets[method]||wallets.bitcoin;
+  document.getElementById('coin-name').textContent=w.name;
+  document.getElementById('coin-short').textContent=w.short;
+  if(document.getElementById('wallet-addr'))document.getElementById('wallet-addr').textContent=w.addr||'Contact admin for address';
+  document.getElementById('s-method').textContent=w.name;
+  document.getElementById('s-time').textContent=w.time;
+  document.getElementById('det-crypto').style.display='';
+  document.getElementById('proof-step').style.display='';
+}
+function setAmt(n){document.getElementById('dep-amount').value=n;updateSummary();}
+function updateSummary(){
+  const v=parseFloat(document.getElementById('dep-amount').value)||0;
+  const f='$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('s-amount').textContent=f;
+  document.getElementById('s-total').textContent=f;
+}
+function handleFile(input){
+  const f=input.files[0];if(!f)return;
+  document.getElementById('file-name').textContent=f.name;
+  document.getElementById('file-preview').style.display='flex';
+  document.getElementById('drop-zone').style.display='none';
+}
+function removeFile(){
+  document.getElementById('proof-file').value='';
+  document.getElementById('file-preview').style.display='none';
+  document.getElementById('drop-zone').style.display='';
+}
+// Drag and drop
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--gold)';});
+dz.addEventListener('dragleave',()=>dz.style.borderColor='var(--border-s)');
+dz.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('proof-file').files=dt.files;handleFile(document.getElementById('proof-file'));}});
+
+// Pending deposit countdown timers
+function updateCountdowns(){
+  document.querySelectorAll('.deposit-countdown').forEach(el=>{
+    const expires = new Date(el.dataset.expires).getTime();
+    const now = Date.now();
+    const diff = Math.max(0, Math.floor((expires-now)/1000));
+    const txt = el.querySelector('.cd-text');
+    if (diff <= 0) {
+      txt.textContent = 'Expired';
+      el.style.color = 'var(--red)';
+    } else {
+      const m = Math.floor(diff/60), s = diff%60;
+      txt.textContent = `${m}:${s.toString().padStart(2,'0')} remaining`;
+    }
+  });
+}
+updateCountdowns();
+setInterval(updateCountdowns, 1000);
+</script>
+{% endblock %}

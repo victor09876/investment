@@ -2,7 +2,7 @@
 {% block title %}Edit {{ page.title }}{% endblock %}
 {% block page_title %}Edit Page: {{ page.title }}{% endblock %}
 {% block content %}
-<div style="max-width:800px;">
+<div>
   <div style="margin-bottom:1.25rem;display:flex;gap:8px;align-items:center;"><a href="{% url 'admin_pages' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Pages</a>
     {% if page.slug == 'home' %}<a href="/" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>
     {% elif page.slug == 'about' %}<a href="{% url 'front_about' %}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> Preview</a>

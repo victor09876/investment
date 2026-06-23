@@ -10,7 +10,7 @@
   <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="s-label">Last Tick</div><div class="s-value" style="font-size:1.1rem;">{{ site.cron_last_tick|date:"H:i:s"|default:"Never" }}</div></div>
 </div>
 
-<div class="alert alert-success" style="margin-bottom:1.5rem;"><i class="fa-solid fa-circle-check"></i> Automatic scheduling is <strong>active</strong> — daily ROI crediting, investment completion, and deposit expiry run automatically every {{ site.cron_interval_minutes }} minutes (checked on each request, no manual button press needed). For production deployments, you can additionally configure an OS-level cron to run <code style="background:var(--navy-3);padding:2px 8px;border-radius:5px;">python manage.py run_cron</code> every 5 minutes for guaranteed execution even with no traffic.</div>
+<div class="alert alert-success" style="margin-bottom:1.5rem;"><div><i class="fa-solid fa-circle-check"></i>&nbsp; Automatic scheduling is <strong>active</strong> — daily ROI crediting, investment completion, and deposit expiry run automatically every {{ site.cron_interval_minutes }} minutes (checked on each request, no manual button press needed). For production deployments, you can additionally configure an OS-level cron to run <code style="background:var(--navy-3);padding:2px 8px;border-radius:5px;">python manage.py run_cron</code> every 5 minutes for guaranteed execution even with no traffic.</div></div>
 
 <div class="card">
   <div class="table-wrap">
@@ -19,7 +19,7 @@
       <tbody>
       {% for c in crons %}
       <tr>
-        <td><i class="fa-solid fa-gear" style="color:var(--gold);margin-right:8px;"></i>{{ c.name }}</td>
+        <td><i class="fa-solid fa-gear" style="color:var(--gold);margin-right:8px;"></i>&nbsp;{{ c.name }}</td>
         <td style="font-size:.82rem;color:var(--faint);">{{ c.last_run|date:"M d, Y H:i:s"|default:"Never" }}</td>
         <td style="font-size:.82rem;color:var(--faint);">{{ c.next_run|date:"M d, Y H:i:s"|default:"Every 5 min" }}</td>
         <td><span class="badge {% if c.status == 'success' %}badge-success{% elif c.status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}"><i class="fa-solid fa-circle" style="font-size:.5rem;"></i> {{ c.get_status_display }}</span></td>

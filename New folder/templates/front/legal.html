@@ -1,0 +1,32 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:4rem 2rem 2rem;">
+  <div style="max-width:760px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+    <h1 style="font-family:var(--ff-d);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;">{{ page.title }}</h1>
+    {% if page.subtitle %}<p style="color:var(--muted);font-size:.95rem;line-height:1.8;">{{ page.subtitle }}</p>{% endif %}
+    <p style="color:var(--faint);font-size:.8rem;margin-top:.5rem;font-family:var(--ff-m);">Last updated: {{ page.updated_at|date:"F j, Y" }}</p>
+  </div>
+</section>
+<section class="front-section" style="padding-top:0;">
+  <div style="max-width:760px;margin:0 auto;">
+    {% if page.content %}
+    <div style="color:var(--muted);font-size:.92rem;line-height:2;">
+      {% for para in page.content.splitlines %}
+      {% if para.strip %}
+        {% if para.strip|slice:":2" == "##" %}
+          <h3 style="font-family:var(--ff-d);color:var(--text);font-size:1.05rem;font-weight:700;margin:2rem 0 .75rem;">{{ para|slice:"2:" }}</h3>
+        {% elif para.strip|slice:":1" == "#" %}
+          <h2 style="font-family:var(--ff-d);color:var(--text);font-size:1.2rem;font-weight:700;margin:2.5rem 0 1rem;">{{ para|slice:"1:" }}</h2>
+        {% else %}
+          <p style="margin-bottom:1rem;">{{ para }}</p>
+        {% endif %}
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> This page hasn't been filled in yet. Visit the Admin Panel &rarr; Site Pages to add content.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -2,7 +2,7 @@
 {% block title %}{% if post %}Edit Post{% else %}New Post{% endif %}{% endblock %}
 {% block page_title %}{% if post %}Edit Blog Post{% else %}New Blog Post{% endif %}{% endblock %}
 {% block content %}
-<div style="max-width:800px;">
+<div>
   <div style="margin-bottom:1.25rem;"><a href="{% url 'admin_blog' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a></div>
   <form method="post" enctype="multipart/form-data">{% csrf_token %}
     <div class="card" style="margin-bottom:1.25rem;">

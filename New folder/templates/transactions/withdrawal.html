@@ -1,0 +1,151 @@
+{% extends 'layout.html' %}
+{% block title %}Withdrawal{% endblock %}
+{% block page_title %}Withdraw Funds{% endblock %}
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;">
+  <!-- LEFT -->
+  <div>
+    <!-- BALANCE BARS -->
+    <div class="grid-3" style="margin-bottom:1.5rem;">
+      <div class="stat-card"><div class="icon-wrap" style="background:rgba(201,168,76,.12);color:var(--gold);"><i class="fa-solid fa-sack-dollar"></i></div><div class="s-label">Wallet Balance</div><div class="s-value">${{ user.wallet_balance|floatformat:2 }}</div></div>
+      <div class="stat-card"><div class="icon-wrap" style="background:var(--green-bg);color:var(--green);"><i class="fa-solid fa-chart-line"></i></div><div class="s-label">Profit Balance</div><div class="s-value" style="color:var(--green);">${{ user.profit_balance|floatformat:2 }}</div></div>
+      <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-bg);color:var(--blue);"><i class="fa-solid fa-wallet"></i></div><div class="s-label">Total Available</div><div class="s-value">${{ user.total_balance|floatformat:2 }}</div></div>
+    </div>
+
+    <form method="post" id="wth-form">{% csrf_token %}
+      <!-- SOURCE -->
+      <div class="card" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 1 — Choose Source Balance</div></div>
+        <div class="method-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="method-card selected" data-source="wallet" onclick="selSource(this,'wallet',{{ user.wallet_balance }})">
+            <div class="m-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="m-name">Wallet Balance</div>
+            <div class="m-sub">${{ user.wallet_balance|floatformat:2 }} available</div>
+          </div>
+          <div class="method-card" data-source="profit" onclick="selSource(this,'profit',{{ user.profit_balance }})">
+            <div class="m-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="m-name">Profit Balance</div>
+            <div class="m-sub">${{ user.profit_balance|floatformat:2 }} available</div>
+          </div>
+        </div>
+        <input type="hidden" name="source" id="source-input" value="wallet">
+      </div>
+
+      <!-- METHOD -->
+      <div class="card" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 2 — Select Withdrawal Method</div></div>
+        <div class="method-grid wmethod-grid">
+          <div class="method-card selected" onclick="selWMethod(this,'bitcoin','~30 min','Bitcoin (BTC)')"><div class="m-icon"><i class="fa-brands fa-bitcoin"></i></div><div class="m-name">Bitcoin</div><div class="m-sub">~30 min</div></div>
+          <div class="method-card" onclick="selWMethod(this,'usdt_trc20','~15 min','USDT TRC20')"><div class="m-icon"><i class="fa-solid fa-money-bill"></i></div><div class="m-name">USDT</div><div class="m-sub">~15 min</div></div>
+          <div class="method-card" onclick="selWMethod(this,'ethereum','~20 min','Ethereum (ETH)')"><div class="m-icon"><i class="fa-brands fa-ethereum"></i></div><div class="m-name">Ethereum</div><div class="m-sub">~20 min</div></div>
+          <div class="method-card" onclick="selWMethod(this,'paypal','Instant','PayPal')"><div class="m-icon"><i class="fa-brands fa-paypal"></i></div><div class="m-name">PayPal</div><div class="m-sub">Instant</div></div>
+        </div>
+        <input type="hidden" name="method" id="wmethod-input" value="bitcoin">
+      </div>
+
+      <!-- DETAILS -->
+      <div class="card" style="margin-bottom:1.4rem;">
+        <div class="card-header"><div class="card-title">Step 3 — Enter Details</div></div>
+        <div class="form-group">
+          <label class="form-label" id="dest-label">Bitcoin Wallet Address</label>
+          <div class="input-wrap"><span class="input-icon" id="dest-icon"><i class="fa-brands fa-bitcoin"></i></span><input type="text" name="destination" class="form-control" id="dest-input" placeholder="Enter your BTC wallet address" required></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (USD)</label>
+          <div class="input-wrap"><span class="input-icon" style="font-weight:700;">$</span><input type="number" name="amount" id="wamt" class="form-control" placeholder="0.00" min="{{ settings.min_withdrawal }}" max="{{ user.wallet_balance }}" step="0.01" oninput="updateWSummary()" required></div>
+          <p class="form-hint">Min: ${{ settings.min_withdrawal|floatformat:2 }} · Available from <span id="source-label-hint">wallet</span>: <strong id="source-max-hint" style="color:var(--gold);">${{ user.wallet_balance|floatformat:2 }}</strong></p>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.25rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="setWAmt(100)">$100</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setWAmt(500)">$500</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="setWAmt(1000)">$1,000</button>
+          <button type="button" class="btn btn-outline btn-sm" id="max-btn" onclick="setWAmt({{ user.wallet_balance }})">Max</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Withdrawal PIN</label>
+          <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input type="password" name="pin" class="form-control" placeholder="4-digit PIN" maxlength="4" id="pin-inp" required><button type="button" onclick="togglePw('pin-inp',this)" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--faint);cursor:pointer;font-size:.9rem;"><i class="fa-solid fa-eye"></i></button></div>
+          {% if not user.withdrawal_pin %}<p class="form-hint"><i class="fa-solid fa-triangle-exclamation"></i> <a href="{% url 'set_pin' %}" style="color:var(--amber);">Set a withdrawal PIN</a> before withdrawing.</p>{% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" {% if not user.withdrawal_pin %}disabled{% endif %}>Request Withdrawal →</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- RIGHT -->
+  <div style="display:flex;flex-direction:column;gap:1.15rem;">
+    <div class="card card-gold">
+      <div class="card-title" style="margin-bottom:1.15rem;">Withdrawal Summary</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:.86rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Amount</span><span id="ws-amount" style="font-weight:600;">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Method</span><span id="ws-method" style="font-weight:600;">Bitcoin</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Processing</span><span id="ws-time" style="font-weight:600;">~30 min</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Fee</span><span style="font-weight:600;color:var(--green);">{% if settings.withdrawal_fee_pct > 0 %}{{ settings.withdrawal_fee_pct }}%{% else %}Free{% endif %}</span></div>
+        <div style="height:1px;background:var(--border-s);"></div>
+        <div style="display:flex;justify-content:space-between;font-size:.93rem;"><span>You Receive</span><span id="ws-receive" style="font-family:var(--ff-d);font-weight:800;color:var(--gold);">$0.00</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Recent Withdrawals</div><a href="{% url 'transactions' %}?type=withdrawal" style="font-size:.78rem;color:var(--gold);">All</a></div>
+      {% for t in recent %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;{% if not forloop.last %}border-bottom:1px solid var(--border-s);{% endif %}font-size:.84rem;">
+        <div><div style="font-weight:600;">{{ t.get_method_display }}</div><div style="font-size:.73rem;color:var(--faint);">{{ t.created_at|date:"M d, Y" }}</div></div>
+        <div style="text-align:right;"><div style="color:var(--red);font-weight:600;">-${{ t.amount|floatformat:2 }}</div><span class="badge {{ t.status_class }}" style="font-size:.67rem;">{{ t.get_status_display }}</span></div>
+      </div>
+      {% empty %}<div style="color:var(--faint);font-size:.84rem;text-align:center;padding:.75rem;">No withdrawals yet.</div>{% endfor %}
+    </div>
+    <div class="card">
+      <div style="font-size:.83rem;font-weight:600;margin-bottom:9px;"><i class="fa-solid fa-copy"></i> Withdrawal Policy</div>
+      <div style="font-size:.79rem;color:var(--faint);display:flex;flex-direction:column;gap:6px;line-height:1.6;">
+        <div><i class="fa-solid fa-check"></i> Minimum: <strong style="color:var(--muted);">${{ settings.min_withdrawal|floatformat:2 }}</strong></div>
+        <div><i class="fa-solid fa-check"></i> Fee: <strong style="color:var(--muted);">{% if settings.withdrawal_fee_pct > 0 %}{{ settings.withdrawal_fee_pct }}%{% else %}None{% endif %}</strong></div>
+        <div><i class="fa-solid fa-check"></i> Crypto: within 30–60 minutes</div>
+        <div><i class="fa-solid fa-check"></i> Bank transfers: 1–3 business days</div>
+        <div><i class="fa-solid fa-check"></i> PIN required for all withdrawals</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const balances = {wallet: {{ user.wallet_balance }}, profit: {{ user.profit_balance }}};
+
+function togglePw(id,b){const i=document.getElementById(id);i.type=i.type==='text'?'password':'text';b.innerHTML=i.type==='text'?'<i class="fa-solid fa-eye-slash"></i>':'<i class="fa-solid fa-eye"></i>';}
+
+function selSource(el, source, max){
+  document.querySelectorAll('[data-source]').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('source-input').value = source;
+  document.getElementById('source-label-hint').textContent = source === 'profit' ? 'profit balance' : 'wallet balance';
+  const fmt = n => '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('source-max-hint').textContent = fmt(max);
+  const wamt = document.getElementById('wamt');
+  wamt.max = max;
+  document.getElementById('max-btn').setAttribute('onclick', `setWAmt(${max})`);
+  if (parseFloat(wamt.value) > max) { wamt.value = max; updateWSummary(); }
+}
+
+function selWMethod(el,method,time,name){
+  document.querySelectorAll('.wmethod-grid .method-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('wmethod-input').value=method;
+  document.getElementById('ws-method').textContent=name;
+  document.getElementById('ws-time').textContent=time;
+  const labels={bitcoin:'Bitcoin Wallet Address',usdt_trc20:'USDT Wallet Address',ethereum:'Ethereum Address',paypal:'PayPal Email'};
+  const icons={bitcoin:'<i class="fa-brands fa-bitcoin"></i>',usdt_trc20:'<i class="fa-solid fa-money-bill"></i>',ethereum:'<i class="fa-brands fa-ethereum"></i>',paypal:'<i class="fa-brands fa-paypal"></i>'};
+  const placeholders={bitcoin:'bc1q...',usdt_trc20:'TXxxxx...',ethereum:'0x...',paypal:'your@paypal.email'};
+  document.getElementById('dest-label').textContent=labels[method]||'Destination';
+  document.getElementById('dest-icon').innerHTML=icons[method]||'<i class="fa-solid fa-arrow-right"></i>';
+  document.getElementById('dest-input').placeholder=placeholders[method]||'Enter destination';
+}
+function setWAmt(n){document.getElementById('wamt').value=n;updateWSummary();}
+function updateWSummary(){
+  const v=parseFloat(document.getElementById('wamt').value)||0;
+  const fee=v*{{ settings.withdrawal_fee_pct|default:0 }}/100;
+  const net=v-fee;
+  const fmt=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('ws-amount').textContent=fmt(v);
+  document.getElementById('ws-receive').textContent=fmt(net);
+}
+</script>
+{% endblock %}

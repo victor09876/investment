@@ -1,0 +1,42 @@
+{% extends 'front/base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_desc %}{{ post.excerpt|default:post.title }}{% endblock %}
+{% block content %}
+<section class="front-hero" style="min-height:auto;padding:3rem 2rem 0;">
+  <div style="max-width:760px;margin:0 auto;position:relative;z-index:1;">
+    <a href="{% url 'front_blog' %}" style="color:var(--muted);font-size:.84rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+    {% if post.category %}<span class="badge badge-gold" style="margin-bottom:.85rem;display:inline-flex;">{{ post.category }}</span>{% endif %}
+    <h1 style="font-family:var(--ff-d);font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;line-height:1.2;">{{ post.title }}</h1>
+    <div style="display:flex;align-items:center;gap:12px;color:var(--faint);font-size:.81rem;font-family:var(--ff-m);margin-bottom:2rem;">
+      <span><i class="fa-solid fa-circle-user"></i> {{ post.author_name }}</span>
+      <span>•</span>
+      <span>{{ post.created_at|date:"F j, Y" }}</span>
+    </div>
+  </div>
+</section>
+<section style="padding:0 2rem 4rem;">
+  <div style="max-width:760px;margin:0 auto;">
+    {% if post.cover_image %}<img src="{{ post.cover_image.url }}" alt="{{ post.title }}" style="width:100%;border-radius:var(--radius-xl);margin-bottom:2.5rem;border:1px solid var(--border-s);">{% endif %}
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.9;">
+      {% for para in post.content.splitlines %}{% if para.strip %}<p style="margin-bottom:1.25rem;">{{ para }}</p>{% endif %}{% endfor %}
+    </div>
+    {% if related %}
+    <div style="margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border-s);">
+      <h3 style="font-family:var(--ff-d);font-size:1.1rem;margin-bottom:1.5rem;">Related Articles</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;">
+        {% for rp in related %}
+        <a href="{% url 'front_blog_detail' rp.slug %}" class="card" style="text-decoration:none;">
+          <div style="font-family:var(--ff-d);font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.4rem;">{{ rp.title|truncatechars:45 }}</div>
+          <div style="font-size:.74rem;color:var(--faint);font-family:var(--ff-m);">{{ rp.created_at|date:"M d, Y" }}</div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <div style="text-align:center;margin-top:3rem;padding:2rem;border-top:1px solid var(--border-s);">
+      <p style="color:var(--muted);margin-bottom:1rem;">Ready to put this knowledge to work?</p>
+      <a href="{% url 'register' %}" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> Start Investing</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

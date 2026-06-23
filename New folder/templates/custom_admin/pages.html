@@ -1,0 +1,24 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Pages{% endblock %}
+{% block page_title %}Site Pages{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Manage Pages</h1><p class="page-subtitle">Edit the content shown on your public marketing site</p></div></div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Page</th><th>Slug</th><th>Status</th><th>Last Updated</th><th></th></tr></thead>
+      <tbody>
+      {% for page in pages %}
+      <tr>
+        <td style="font-weight:600;">{{ page.title }}</td>
+        <td><code style="color:var(--faint);">/{{ page.slug }}/</code></td>
+        <td><span class="badge {% if page.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if page.is_active %}Visible{% else %}Hidden{% endif %}</span></td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ page.updated_at|date:"M d, Y H:i" }}</td>
+        <td><a href="{% url 'admin_page_edit' page.id %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i> Edit</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

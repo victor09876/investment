@@ -6,7 +6,7 @@
   <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.75rem;">
     <a href="{% url 'plans' %}" class="btn btn-ghost btn-sm">← Back to Plans</a>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+  <div>
     <!-- PLAN SUMMARY -->
     <div class="card card-gold">
       <div class="plan-icon" style="background:rgba(201,168,76,.1);color:var(--gold);"><i class="fa-solid fa-{{ plan.fa_icon }}"></i></div>
@@ -35,7 +35,7 @@
     <div class="card">
       <div class="card-title" style="margin-bottom:1.25rem;">Enter Investment Amount</div>
       {% if request.user.wallet_balance == 0 %}
-      <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> Your wallet balance is $0.00. <a href="{% url 'deposit' %}" style="color:var(--amber);font-weight:600;text-decoration:underline;">Deposit funds first</a></div>
+      <div class="alert alert-warning"><div><i class="fa-solid fa-triangle-exclamation"></i> Your wallet balance is $0.00. <a href="{% url 'deposit' %}" style="color:var(--amber);font-weight:600;text-decoration:underline;">Deposit funds first</a></div></div>
       {% endif %}
       <form method="post">{% csrf_token %}
         <div class="form-group">

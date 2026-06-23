@@ -1,0 +1,53 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Login Analytics{% endblock %}
+{% block page_title %}Login Analytics{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Login Analytics</h1><p class="page-subtitle">Login activity over the last 30 days &middot; {{ total }} total logins</p></div></div>
+<div class="grid-3">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-globe" style="color:var(--gold);margin-right:8px;"></i>By Browser</div></div>
+    <div id="chart-browser" style="height:200px;margin-bottom:1rem;"></div>
+    {% for b in by_browser %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;{% if not forloop.last %}border-bottom:1px solid rgba(255,255,255,.04);{% endif %}">
+      <span style="font-size:.85rem;color:var(--muted);">
+        {% if 'Chrome' in b.browser %}<i class="fa-brands fa-chrome" style="color:#4285F4;width:20px;"></i>{% elif 'Firefox' in b.browser %}<i class="fa-brands fa-firefox-browser" style="color:#FF7139;width:20px;"></i>{% elif 'Safari' in b.browser %}<i class="fa-brands fa-safari" style="color:#006CFF;width:20px;"></i>{% elif 'Edge' in b.browser %}<i class="fa-brands fa-edge" style="color:#0078D7;width:20px;"></i>{% elif 'Opera' in b.browser %}<i class="fa-brands fa-opera" style="color:#FF1B2D;width:20px;"></i>{% else %}<i class="fa-solid fa-globe" style="width:20px;"></i>{% endif %}
+        {{ b.browser|default:"Unknown" }}
+      </span>
+      <span class="badge badge-gold">{{ b.count }}</span>
+    </div>
+    {% empty %}<div style="text-align:center;color:var(--faint);padding:1.5rem;font-size:.85rem;">No login data yet</div>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-desktop" style="color:var(--gold);margin-right:8px;"></i>By Operating System</div></div>
+    <div id="chart-os" style="height:200px;margin-bottom:1rem;"></div>
+    {% for o in by_os %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;{% if not forloop.last %}border-bottom:1px solid rgba(255,255,255,.04);{% endif %}">
+      <span style="font-size:.85rem;color:var(--muted);">
+        {% if 'Windows' in o.os %}<i class="fa-brands fa-windows" style="color:#00A4EF;width:20px;"></i>{% elif 'Mac' in o.os %}<i class="fa-brands fa-apple" style="width:20px;"></i>{% elif 'iOS' in o.os %}<i class="fa-brands fa-apple" style="width:20px;"></i>{% elif 'Android' in o.os %}<i class="fa-brands fa-android" style="color:#3DDC84;width:20px;"></i>{% elif 'Linux' in o.os %}<i class="fa-brands fa-linux" style="width:20px;"></i>{% else %}<i class="fa-solid fa-desktop" style="width:20px;"></i>{% endif %}
+        {{ o.os|default:"Unknown" }}
+      </span>
+      <span class="badge badge-gold">{{ o.count }}</span>
+    </div>
+    {% empty %}<div style="text-align:center;color:var(--faint);padding:1.5rem;font-size:.85rem;">No login data yet</div>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fa-solid fa-earth-americas" style="color:var(--gold);margin-right:8px;"></i>By Country</div></div>
+    {% for c in by_country %}
+    <div style="margin-bottom:.85rem;">
+      <div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:5px;"><span style="color:var(--muted);"><i class="fa-solid fa-location-dot" style="width:18px;color:var(--faint);"></i>{{ c.country|default:"Unknown" }}</span><span style="font-weight:600;">{{ c.count }} ({{ c.pct }}%)</span></div>
+      <div class="progress"><div class="progress-bar" style="width:{{ c.pct }}%;"></div></div>
+    </div>
+    {% empty %}<div style="text-align:center;color:var(--faint);padding:1.5rem;font-size:.85rem;">No login data yet</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const browser = {{ by_browser|safe }};
+  const os = {{ by_os|safe }};
+  if (browser.length) drawBarChart('chart-browser', browser.map(b=>({value:b.count,label:(b.browser||'?').slice(0,8)})), 'var(--blue)', {isCurrency:false});
+  if (os.length) drawBarChart('chart-os', os.map(o=>({value:o.count,label:(o.os||'?').slice(0,8)})), 'var(--green)', {isCurrency:false});
+});
+</script>
+{% endblock %}

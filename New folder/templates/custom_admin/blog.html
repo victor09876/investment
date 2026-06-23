@@ -1,0 +1,30 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}Blog{% endblock %}
+{% block page_title %}Blog Management{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Blog Posts</h1><p class="page-subtitle">{{ posts.count }} total posts</p></div><a href="{% url 'admin_blog_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New Post</a></div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Title</th><th>Category</th><th>Author</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+      {% for post in posts %}
+      <tr>
+        <td style="font-weight:600;">{{ post.title|truncatechars:45 }}</td>
+        <td>{% if post.category %}<span class="badge badge-gold">{{ post.category }}</span>{% else %}—{% endif %}</td>
+        <td style="font-size:.83rem;color:var(--muted);">{{ post.author_name }}</td>
+        <td><span class="badge {% if post.is_published %}badge-success{% else %}badge-warning{% endif %}">{% if post.is_published %}Published{% else %}Draft{% endif %}</span></td>
+        <td style="font-size:.8rem;color:var(--faint);">{{ post.created_at|date:"M d, Y" }}</td>
+        <td style="display:flex;gap:6px;">
+          <a href="{% url 'admin_blog_edit' post.id %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-pen"></i></a>
+          <form method="post" action="{% url 'admin_blog_delete' post.id %}" onsubmit="return confirm('Delete this post?')"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"><button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--faint);padding:3rem;">No blog posts yet. Click "New Post" to create one.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
