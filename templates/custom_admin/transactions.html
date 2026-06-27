@@ -16,7 +16,7 @@
   <div class="card-title" style="margin-bottom:1rem;color:var(--amber);">⏳&nbsp; Pending Actions Required</div>
   <form method="post" id="bulk-form">{% csrf_token %}
     <div class="table-wrap"><table>
-      <thead><tr><th style="width:36px;"><input type="checkbox" id="check-all" style="accent-color:var(--gold);"></th><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Proof</th><th>Date</th></tr></thead>
+      <thead><tr><th style="width:36px;"><input type="checkbox" id="check-all" style="accent-color:var(--gold);"></th><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Crypto</th><th>Method</th><th>Proof</th><th>Date</th></tr></thead>
       <tbody>
       {% for t in transactions %}{% if t.status == 'pending' or t.status == 'processing' %}
       <tr>
@@ -25,6 +25,7 @@
         <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.84rem;">{{ t.user.email }}</a></td>
         <td><span class="badge {% if t.type == 'deposit' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:.68rem;">{{ t.get_type_display }}</span></td>
         <td style="font-weight:700;">${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.76rem;color:{% if t.crypto_amount %}var(--gold){% else %}var(--faint){% endif %};font-family:var(--ff-m);">{% if t.crypto_amount and t.crypto_symbol %}{{ t.crypto_amount|floatformat:8 }} {{ t.crypto_symbol }}{% else %}--{% endif %}</td>
         <td style="font-size:.82rem;color:var(--muted);">{{ t.get_method_display }}</td>
         <td>{% if t.proof_image %}<a href="{{ t.proof_image.url }}" target="_blank" class="btn btn-ghost btn-sm"><i class="fa-solid fa-paperclip"></i> View</a>{% else %}<span style="color:var(--faint);font-size:.8rem;">None</span>{% endif %}</td>
         <td style="font-size:.79rem;color:var(--faint);">{{ t.created_at|date:"M d H:i" }}</td>
@@ -52,7 +53,7 @@
 <div class="card">
   <div class="table-wrap">
     <table>
-      <thead><tr><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Reference</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>User</th><th>Type</th><th>Amount</th><th>Crypto</th><th>Method</th><th>Reference</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
       {% for t in transactions %}
       <tr>
@@ -60,6 +61,7 @@
         <td><a href="{% url 'admin_user_detail' t.user.id %}" style="color:var(--gold);font-size:.83rem;">{{ t.user.email }}</a></td>
         <td><span class="badge badge-gold" style="font-size:.67rem;">{{ t.get_type_display }}</span></td>
         <td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.76rem;color:{% if t.crypto_amount %}var(--gold){% else %}var(--faint){% endif %};font-family:var(--ff-m);">{% if t.crypto_amount and t.crypto_symbol %}{{ t.crypto_amount|floatformat:8 }} {{ t.crypto_symbol }}{% else %}--{% endif %}</td>
         <td style="font-size:.81rem;color:var(--muted);">{{ t.get_method_display }}</td>
         <td style="font-size:.75rem;color:var(--faint);">{{ t.reference|truncatechars:20|default:"—" }}</td>
         <td style="font-size:.79rem;color:var(--faint);">{{ t.created_at|date:"M d H:i" }}</td>
@@ -74,7 +76,7 @@
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="9" style="text-align:center;color:var(--faint);padding:2.5rem;">No transactions found.</td></tr>
+      <tr><td colspan="10" style="text-align:center;color:var(--faint);padding:2.5rem;">No transactions found.</td></tr>
       {% endfor %}
       </tbody>
     </table>

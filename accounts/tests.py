@@ -1,5 +1,7 @@
 from django.test import TestCase
+from django.urls import reverse
 from .forms import RegisterForm
+from .models import PasswordResetToken, User
 
 
 class RegisterFormTests(TestCase):
@@ -29,3 +31,27 @@ class RegisterFormTests(TestCase):
         form = RegisterForm(data=self.valid_form_data())
 
         self.assertTrue(form.is_valid())
+
+
+class ForgotPasswordTests(TestCase):
+    def test_unknown_email_shows_error_and_does_not_create_token(self):
+        response = self.client.post(reverse('forgot_password'), {'email': 'missing@example.com'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No account is registered with that email address.')
+        self.assertContains(response, 'value="missing@example.com"')
+        self.assertEqual(PasswordResetToken.objects.count(), 0)
+
+    def test_registered_email_creates_reset_token(self):
+        User.objects.create_user(
+            email='known@example.com',
+            password='StrongPass123!',
+            first_name='Known',
+            last_name='User',
+        )
+
+        response = self.client.post(reverse('forgot_password'), {'email': 'known@example.com'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'A password reset link has been sent to your email.')
+        self.assertEqual(PasswordResetToken.objects.count(), 1)

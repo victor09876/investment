@@ -81,19 +81,23 @@ def logout_view(request):
 
 def forgot_password_view(request):
     sent = False
+    email = ''
     if request.method == 'POST':
         email = request.POST.get('email','').strip().lower()
         user = User.objects.filter(email=email).first()
-        if user:
-            from .models import PasswordResetToken
-            from .email_utils import send_email
-            reset_token = PasswordResetToken.generate(user)
-            reset_url = request.build_absolute_uri(f'/reset-password/{reset_token.token}/')
-            send_email(user.email, 'Reset your password', 'password_reset',
-                       {'user': user, 'reset_url': reset_url})
+        if not user:
+            messages.error(request, 'No account is registered with that email address.')
+            return render(request, 'accounts/forgot_password.html', {'sent': sent, 'email': email})
+
+        from .models import PasswordResetToken
+        from .email_utils import send_email
+        reset_token = PasswordResetToken.generate(user)
+        reset_url = request.build_absolute_uri(f'/reset-password/{reset_token.token}/')
+        send_email(user.email, 'Reset your password', 'password_reset',
+                   {'user': user, 'reset_url': reset_url})
         sent = True
-        messages.success(request, 'If that email exists, a password reset link has been sent.')
-    return render(request, 'accounts/forgot_password.html', {'sent': sent})
+        messages.success(request, 'A password reset link has been sent to your email.')
+    return render(request, 'accounts/forgot_password.html', {'sent': sent, 'email': email})
 
 
 def reset_password_view(request, token):

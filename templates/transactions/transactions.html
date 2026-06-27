@@ -25,7 +25,7 @@
 <div class="card">
   <div class="table-wrap">
     <table id="txn-table">
-      <thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Amount</th><th>Crypto</th><th>Date</th><th>Status</th><th></th></tr></thead>
       <tbody>
       {% for t in transactions %}
       <tr>
@@ -33,12 +33,13 @@
         <td><span class="badge badge-gold" style="font-size:.69rem;">{{ t.get_type_display }}</span></td>
         <td>{{ t.description }}</td>
         <td style="color:{% if t.is_credit %}var(--green){% else %}var(--red){% endif %};font-weight:600;">{% if t.is_credit %}+{% else %}-{% endif %}${{ t.amount|floatformat:2 }}</td>
+        <td style="font-size:.78rem;color:{% if t.crypto_amount %}var(--gold){% else %}var(--faint){% endif %};font-family:var(--ff-m);">{% if t.crypto_amount and t.crypto_symbol %}{{ t.crypto_amount|floatformat:8 }} {{ t.crypto_symbol }}{% else %}--{% endif %}</td>
         <td style="color:var(--faint);font-size:.81rem;">{{ t.created_at|date:"M d, Y H:i" }}</td>
         <td><span class="badge {{ t.status_class }}">{{ t.get_status_display }}</span></td>
-        <td><button class="btn btn-ghost btn-sm" onclick="showReceipt('{{ t.txn_id }}','{{ t.get_type_display }}','{% if t.is_credit %}+{% else %}-{% endif %}${{ t.amount|floatformat:2 }}','{{ t.created_at|date:"M d, Y H:i" }}','{{ t.get_status_display }}','{{ t.description }}','{{ t.reference }}')"><i class="fa-solid fa-receipt"></i></button></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="showReceipt('{{ t.txn_id }}','{{ t.get_type_display }}','{% if t.is_credit %}+{% else %}-{% endif %}${{ t.amount|floatformat:2 }}','{% if t.crypto_amount and t.crypto_symbol %}{{ t.crypto_amount|floatformat:8 }} {{ t.crypto_symbol }}{% endif %}','{{ t.created_at|date:"M d, Y H:i" }}','{{ t.get_status_display }}','{{ t.description }}','{{ t.reference }}')"><i class="fa-solid fa-receipt"></i></button></td>
       </tr>
       {% empty %}
-      <tr><td colspan="7" style="text-align:center;color:var(--faint);padding:2.5rem;">No transactions found.</td></tr>
+      <tr><td colspan="8" style="text-align:center;color:var(--faint);padding:2.5rem;">No transactions found.</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -60,7 +61,7 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-function showReceipt(id,type,amount,date,status,desc,ref){
+function showReceipt(id,type,amount,crypto,date,status,desc,ref){
   const isCredit=amount.startsWith('+');
   document.getElementById('r-icon').innerHTML=isCredit?'<i class="fa-solid fa-circle-check"></i>':'<i class="fa-solid fa-receipt"></i>';
   document.getElementById('r-amount').textContent=amount;
@@ -70,6 +71,7 @@ function showReceipt(id,type,amount,date,status,desc,ref){
     <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">ID</span><span style="font-family:monospace;font-size:.79rem;">#${id}</span></div>
     <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Description</span><span>${desc}</span></div>
     <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Amount</span><span style="color:${isCredit?'var(--green)':'var(--red)'};font-weight:600;">${amount}</span></div>
+    ${crypto?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Crypto Amount</span><span style="color:var(--gold);font-family:var(--ff-m);">${crypto}</span></div>`:''}
     <div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Date</span><span>${date}</span></div>
     ${ref?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--faint);">Reference</span><span style="font-family:monospace;font-size:.78rem;">${ref}</span></div>`:''}
     <div style="height:1px;background:var(--border-s);"></div>

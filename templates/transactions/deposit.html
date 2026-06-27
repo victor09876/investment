@@ -50,6 +50,19 @@
         <!-- CRYPTO DETAILS -->
         <div id="det-crypto">
           <div class="alert alert-info" style="margin-bottom:1rem;"><div><i class="fa-solid fa-circle-info"></i>&nbsp; Send exact amount in <strong id="coin-name">Bitcoin (BTC)</strong> to the wallet below. Credited after 1 confirmation.</div></div>
+          <div style="background:var(--navy-3);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;">
+              <div>
+                <div style="font-size:.77rem;color:var(--faint);font-weight:600;margin-bottom:6px;">Estimated crypto to send</div>
+                <div id="crypto-amount" style="font-family:var(--ff-d);font-size:1.25rem;font-weight:800;color:var(--gold);">Enter amount</div>
+              </div>
+              <div style="text-align:right;font-size:.75rem;color:var(--faint);line-height:1.5;">
+                <div id="crypto-rate">Live rate loading...</div>
+                <div id="crypto-updated"></div>
+              </div>
+            </div>
+            <p id="crypto-error" class="form-error" style="display:none;margin-top:.75rem;"></p>
+          </div>
           <div style="background:var(--navy-3);border-radius:var(--radius);padding:1.1rem;margin-bottom:1rem;">
             <div style="font-size:.77rem;color:var(--faint);margin-bottom:7px;font-weight:600;">Send to wallet address:</div>
             <div style="display:flex;align-items:center;gap:9px;">
@@ -119,6 +132,7 @@
       {% for t in recent %}
       <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;{% if not forloop.last %}border-bottom:1px solid var(--border-s);{% endif %}font-size:.84rem;">
         <div><div style="font-weight:600;">{{ t.get_method_display }}</div><div style="font-size:.73rem;color:var(--faint);">{{ t.created_at|date:"M d, Y" }}</div>
+          {% if t.crypto_amount and t.crypto_symbol %}<div style="font-size:.72rem;color:var(--gold);margin-top:2px;font-family:var(--ff-m);">{{ t.crypto_amount|floatformat:8 }} {{ t.crypto_symbol }}</div>{% endif %}
           {% if t.status == 'pending' and t.expires_at %}<div class="deposit-countdown" data-expires="{{ t.expires_at|date:'c' }}" style="font-size:.71rem;color:var(--amber);margin-top:2px;font-family:var(--ff-m);"><i class="fa-solid fa-hourglass-half"></i> <span class="cd-text">--:--</span></div>{% endif %}
         </div>
         <div style="text-align:right;"><div style="color:var(--green);font-weight:600;">+${{ t.amount|floatformat:2 }}</div><span class="badge {{ t.status_class }}" style="font-size:.67rem;">{{ t.get_status_display }}</span></div>
@@ -140,6 +154,7 @@ const wallets={
   paystack:{name:'Paystack',short:'{{ settings.paystack_currency|default:"NGN" }}',addr:'Secure Paystack checkout',time:'Instant'},
 };
 let selMethod='bitcoin';
+let quoteTimer=null;
 function selectMethod(el,method){
   document.querySelectorAll('.method-card').forEach(c=>{c.classList.remove('selected');});
   el.classList.add('selected');
@@ -152,16 +167,59 @@ function selectMethod(el,method){
   document.getElementById('s-method').textContent=w.name;
   document.getElementById('s-time').textContent=w.time;
   const isPaystack = method === 'paystack';
+  const isCrypto = ['bitcoin','ethereum','usdt_trc20','usdt_erc20'].includes(method);
   document.getElementById('det-crypto').style.display=isPaystack?'none':'';
   document.getElementById('det-paystack').style.display=isPaystack?'':'none';
   document.getElementById('proof-step').style.display=isPaystack?'none':'';
+  if(!isCrypto && !isPaystack)document.getElementById('det-crypto').style.display='none';
+  updateCryptoQuote();
 }
-function setAmt(n){document.getElementById('dep-amount').value=n;updateSummary();}
+function setAmt(n){document.getElementById('dep-amount').value=n;updateSummary();updateCryptoQuote();}
 function updateSummary(){
   const v=parseFloat(document.getElementById('dep-amount').value)||0;
   const f='$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('s-amount').textContent=f;
   document.getElementById('s-total').textContent=f;
+  clearTimeout(quoteTimer);
+  quoteTimer=setTimeout(updateCryptoQuote,350);
+}
+function formatCryptoAmount(value,symbol){
+  const n=Number(value);
+  const digits=symbol==='USDT'?2:8;
+  return n.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits})+' '+symbol;
+}
+async function updateCryptoQuote(){
+  const cryptoMethods=['bitcoin','ethereum','usdt_trc20','usdt_erc20'];
+  const amount=parseFloat(document.getElementById('dep-amount').value)||0;
+  const amountEl=document.getElementById('crypto-amount');
+  const rateEl=document.getElementById('crypto-rate');
+  const updatedEl=document.getElementById('crypto-updated');
+  const errorEl=document.getElementById('crypto-error');
+  if(!cryptoMethods.includes(selMethod))return;
+  if(amount<=0){
+    amountEl.textContent='Enter amount';
+    rateEl.textContent='Live rate loading...';
+    updatedEl.textContent='';
+    errorEl.style.display='none';
+    return;
+  }
+  amountEl.textContent='Calculating...';
+  errorEl.style.display='none';
+  try{
+    const url=`{% url 'crypto_quote' %}?method=${encodeURIComponent(selMethod)}&amount=${encodeURIComponent(amount)}`;
+    const res=await fetch(url,{headers:{'Accept':'application/json'}});
+    const data=await res.json();
+    if(!res.ok||!data.ok)throw new Error(data.error||'Unable to fetch live rate.');
+    amountEl.textContent=formatCryptoAmount(data.crypto_amount,data.symbol);
+    rateEl.textContent=`1 ${data.symbol} = $${Number(data.rate_usd).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    updatedEl.textContent='Updated just now';
+  }catch(err){
+    amountEl.textContent='Rate unavailable';
+    rateEl.textContent='Live rate unavailable';
+    updatedEl.textContent='';
+    errorEl.textContent=err.message;
+    errorEl.style.display='';
+  }
 }
 function handleFile(input){
   const f=input.files[0];if(!f)return;

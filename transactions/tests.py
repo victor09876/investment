@@ -69,3 +69,42 @@ class PaystackCallbackTests(TestCase):
 
         self.user.refresh_from_db()
         self.assertEqual(self.user.wallet_balance, Decimal('100.00'))
+
+
+class CryptoQuoteTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='crypto@example.com',
+            password='StrongPass123!',
+            first_name='Crypto',
+            last_name='User',
+        )
+        self.client.force_login(self.user)
+
+    @patch('transactions.views._crypto_prices_usd')
+    def test_crypto_quote_endpoint_returns_coin_amount(self, mock_prices):
+        mock_prices.return_value = {'bitcoin': Decimal('50000')}
+
+        response = self.client.get(reverse('crypto_quote'), {'method': 'bitcoin', 'amount': '100'})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['symbol'], 'BTC')
+        self.assertEqual(data['crypto_amount'], '0.002000000000')
+
+    @patch('transactions.views._crypto_prices_usd')
+    def test_crypto_deposit_stores_estimated_coin_amount(self, mock_prices):
+        mock_prices.return_value = {'ethereum': Decimal('2500')}
+
+        response = self.client.post(reverse('deposit'), {
+            'method': 'ethereum',
+            'amount': '100',
+            'reference': '0xabc',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        txn = Transaction.objects.get(user=self.user, method='ethereum')
+        self.assertEqual(txn.crypto_symbol, 'ETH')
+        self.assertEqual(txn.crypto_amount, Decimal('0.040000000000'))
+        self.assertEqual(txn.crypto_rate_usd, Decimal('2500'))

@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.cache import cache
 from django.db import transaction as db_transaction
 from django.db.models import Sum, Q
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.urls import reverse
 from decimal import Decimal
 import json
@@ -15,6 +16,13 @@ from accounts.models import Notification, SiteSettings
 
 
 PAYSTACK_BASE_URL = 'https://api.paystack.co'
+COINGECKO_PRICE_URL = 'https://api.coingecko.com/api/v3/simple/price'
+CRYPTO_METHODS = {
+    'bitcoin': {'id': 'bitcoin', 'symbol': 'BTC'},
+    'ethereum': {'id': 'ethereum', 'symbol': 'ETH'},
+    'usdt_trc20': {'id': 'tether', 'symbol': 'USDT'},
+    'usdt_erc20': {'id': 'tether', 'symbol': 'USDT'},
+}
 
 
 def _paystack_request(path, secret_key, payload=None):
@@ -37,6 +45,77 @@ def _paystack_request(path, secret_key, payload=None):
         raise ValueError(message)
     except urllib.error.URLError as exc:
         raise ValueError(f'Unable to contact Paystack: {exc.reason}')
+
+
+def _crypto_prices_usd():
+    cached = cache.get('crypto_prices_usd')
+    if cached:
+        return cached
+
+    ids = ','.join(sorted({item['id'] for item in CRYPTO_METHODS.values()}))
+    url = f'{COINGECKO_PRICE_URL}?ids={urllib.parse.quote(ids)}&vs_currencies=usd'
+    req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError) as exc:
+        raise ValueError(f'Unable to fetch live crypto rates: {exc}')
+
+    prices = {}
+    for coin_id, values in data.items():
+        usd = values.get('usd')
+        if usd:
+            prices[coin_id] = Decimal(str(usd))
+    if not prices:
+        raise ValueError('Live crypto rates are not available right now.')
+    cache.set('crypto_prices_usd', prices, 300)
+    return prices
+
+
+def _crypto_quote(method, usd_amount):
+    config = CRYPTO_METHODS.get(method)
+    if not config:
+        return None
+
+    prices = _crypto_prices_usd()
+    rate = prices.get(config['id'])
+    if not rate or rate <= 0:
+        raise ValueError(f'No live rate found for {config["symbol"]}.')
+
+    crypto_amount = (Decimal(str(usd_amount)) / rate).quantize(Decimal('0.000000000001'))
+    return {
+        'symbol': config['symbol'],
+        'rate_usd': rate,
+        'amount': crypto_amount,
+    }
+
+
+@login_required
+def crypto_quote_view(request):
+    method = request.GET.get('method', '').strip()
+    try:
+        usd_amount = Decimal(request.GET.get('amount', '0'))
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Invalid amount.'}, status=400)
+
+    if usd_amount <= 0:
+        return JsonResponse({'ok': False, 'error': 'Enter an amount greater than zero.'}, status=400)
+    if method not in CRYPTO_METHODS:
+        return JsonResponse({'ok': False, 'error': 'Unsupported crypto method.'}, status=400)
+
+    try:
+        quote = _crypto_quote(method, usd_amount)
+    except ValueError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=503)
+
+    return JsonResponse({
+        'ok': True,
+        'method': method,
+        'symbol': quote['symbol'],
+        'usd_amount': str(usd_amount),
+        'crypto_amount': str(quote['amount']),
+        'rate_usd': str(quote['rate_usd']),
+    })
 
 
 def _credit_confirmed_deposit(txn):
@@ -149,6 +228,14 @@ def deposit_view(request):
                 body=f'Complete your {settings.paystack_currency} payment on Paystack to fund your wallet.')
             return redirect(auth_url)
 
+        crypto_quote = None
+        if method in CRYPTO_METHODS:
+            try:
+                crypto_quote = _crypto_quote(method, amount)
+            except ValueError as exc:
+                messages.error(request, f'Unable to calculate live crypto amount: {exc}')
+                return redirect('deposit')
+
         if method == 'credit_card':
             card_brand = request.POST.get('card_brand','').strip()
             txn = Transaction.objects.create(
@@ -163,7 +250,10 @@ def deposit_view(request):
                 user=request.user, type='deposit', method=method,
                 amount=amount, fee=0, net_amount=amount, status='pending',
                 description=f'{method.replace("_"," ").title()} Deposit',
-                reference=reference, expires_at=expires_at)
+                reference=reference, expires_at=expires_at,
+                crypto_symbol=crypto_quote['symbol'] if crypto_quote else '',
+                crypto_amount=crypto_quote['amount'] if crypto_quote else None,
+                crypto_rate_usd=crypto_quote['rate_usd'] if crypto_quote else None)
             if proof_image:
                 txn.proof_image = proof_image
                 txn.save(update_fields=['proof_image'])
