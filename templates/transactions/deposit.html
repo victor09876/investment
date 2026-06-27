@@ -22,6 +22,11 @@
           <div class="method-card" data-method="paypal" data-target="det-crypto" onclick="selectMethod(this,'paypal')">
             <div class="m-icon"><i class="fa-brands fa-paypal"></i></div><div class="m-name">PayPal</div><div class="m-sub">Instant</div>
           </div>
+          {% if settings.paystack_enabled and settings.paystack_public_key and settings.paystack_secret_key %}
+          <div class="method-card" data-method="paystack" data-target="det-paystack" onclick="selectMethod(this,'paystack')">
+            <div class="m-icon"><i class="fa-solid fa-credit-card"></i></div><div class="m-name">Paystack</div><div class="m-sub">Card / Bank</div>
+          </div>
+          {% endif %}
         </div>
         <input type="hidden" name="method" id="method-input" value="bitcoin">
       </div>
@@ -53,6 +58,14 @@
             </div>
           </div>
           <div style="background:var(--amber-bg);border:1px solid rgba(240,165,0,.2);border-radius:var(--radius);padding:.9rem;font-size:.81rem;color:var(--amber);"><i class="fa-solid fa-triangle-exclamation"></i>️&nbsp; Only send <span id="coin-short">BTC</span> to this address. Wrong coin = permanent loss.</div>
+        </div>
+
+        <!-- PAYSTACK DETAILS -->
+        <div id="det-paystack" style="display:none;">
+          <div class="alert alert-info" style="margin-bottom:1rem;"><div><i class="fa-solid fa-circle-info"></i>&nbsp; You will be redirected to Paystack to complete this deposit securely.</div></div>
+          <div style="background:var(--navy-3);border-radius:var(--radius);padding:1.1rem;margin-bottom:1rem;font-size:.84rem;color:var(--muted);line-height:1.7;">
+            Paystack currency: <strong style="color:var(--gold);">{{ settings.paystack_currency|default:"NGN" }}</strong>. Your wallet will be credited automatically after Paystack confirms the payment.
+          </div>
         </div>
 
       </div>
@@ -124,6 +137,7 @@ const wallets={
   usdt_erc20:{name:'USDT ERC20',short:'USDT',addr:'{{ wallet_map.usdt_erc20|default:"" }}',time:'~15 min'},
   ethereum:{name:'Ethereum (ETH)',short:'ETH',addr:'{{ wallet_map.ethereum|default:"" }}',time:'~20 min'},
   paypal:{name:'PayPal',short:'USD',addr:'payments@investpro.com',time:'Instant'},
+  paystack:{name:'Paystack',short:'{{ settings.paystack_currency|default:"NGN" }}',addr:'Secure Paystack checkout',time:'Instant'},
 };
 let selMethod='bitcoin';
 function selectMethod(el,method){
@@ -137,8 +151,10 @@ function selectMethod(el,method){
   if(document.getElementById('wallet-addr'))document.getElementById('wallet-addr').textContent=w.addr||'Contact admin for address';
   document.getElementById('s-method').textContent=w.name;
   document.getElementById('s-time').textContent=w.time;
-  document.getElementById('det-crypto').style.display='';
-  document.getElementById('proof-step').style.display='';
+  const isPaystack = method === 'paystack';
+  document.getElementById('det-crypto').style.display=isPaystack?'none':'';
+  document.getElementById('det-paystack').style.display=isPaystack?'':'none';
+  document.getElementById('proof-step').style.display=isPaystack?'none':'';
 }
 function setAmt(n){document.getElementById('dep-amount').value=n;updateSummary();}
 function updateSummary(){

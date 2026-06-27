@@ -273,6 +273,7 @@ def admin_settings(request):
             'transfer_fee_pct','custom_css','app_version','maintenance_message',
             'allow_investment_cancellation','deposit_timeout_minutes','cron_interval_minutes',
             'allow_deposit_referral_bonus','deposit_referral_bonus_pct',
+            'paystack_enabled','paystack_public_key','paystack_secret_key','paystack_currency',
             'company_email','support_email','smtp_host','smtp_port','smtp_username',
             'smtp_password','smtp_use_tls','email_from_name','company_phone','company_address',
         ]
@@ -280,7 +281,7 @@ def admin_settings(request):
                        'allow_apple_login','allow_metamask_login','allow_transfer','allow_ranking',
                        'require_kyc_deposit','require_kyc_withdraw','require_email_verify',
                        'allow_withdraw_holiday','secure_password','allow_investment_cancellation',
-                       'allow_deposit_referral_bonus','smtp_use_tls']
+                       'allow_deposit_referral_bonus','paystack_enabled','smtp_use_tls']
         decimal_fields = ['min_deposit','min_withdrawal','withdrawal_fee_pct','cancellation_fee_pct',
                           'welcome_bonus','transfer_fee_pct','deposit_referral_bonus_pct']
         int_fields = ['records_per_page','deposit_timeout_minutes','cron_interval_minutes','smtp_port']
@@ -296,6 +297,10 @@ def admin_settings(request):
             elif f == 'smtp_password':
                 val = request.POST.get(f, '')
                 if val:  # only update if a new password was entered
+                    setattr(site, f, val)
+            elif f == 'paystack_secret_key':
+                val = request.POST.get(f, '')
+                if val:
                     setattr(site, f, val)
             else:
                 setattr(site, f, request.POST.get(f,''))

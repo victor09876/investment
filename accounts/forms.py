@@ -6,10 +6,15 @@ class RegisterForm(forms.ModelForm):
     password  = forms.CharField(widget=forms.PasswordInput, min_length=8)
     password2 = forms.CharField(widget=forms.PasswordInput, label='Confirm Password')
     reg_code  = forms.CharField(required=False, label='Registration Code')
+    terms     = forms.BooleanField(
+        required=True,
+        label='Terms Agreement',
+        error_messages={'required': 'You must agree to the Terms of Service and Privacy Policy to register.'},
+    )
 
     class Meta:
         model  = User
-        fields = ['first_name','last_name','email','phone','country','state','dial_code','password','password2','reg_code']
+        fields = ['first_name','last_name','email','phone','country','state','dial_code','password','password2','reg_code','terms']
 
     def clean(self):
         data = super().clean()

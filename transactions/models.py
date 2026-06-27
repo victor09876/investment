@@ -9,7 +9,7 @@ class Transaction(models.Model):
                 ('failed','Failed'),('cancelled','Cancelled'),('expired','Expired')]
     METHODS  = [('bitcoin','Bitcoin'),('usdt_trc20','USDT TRC20'),('usdt_erc20','USDT ERC20'),
                 ('ethereum','Ethereum'),('bank_transfer','Bank Transfer'),
-                ('credit_card','Credit Card'),('paypal','PayPal'),('wallet','Wallet')]
+                ('credit_card','Credit Card'),('paypal','PayPal'),('paystack','Paystack'),('wallet','Wallet')]
 
     id           = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     txn_id       = models.CharField(max_length=20, unique=True, editable=False)

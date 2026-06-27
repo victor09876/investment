@@ -79,6 +79,20 @@
     <div class="form-group"><label class="form-label">Ethereum (ETH)</label><input type="text" name="ethereum_address" class="form-control" value="{{ site.ethereum_address }}" placeholder="0x..."></div>
   </div>
 
+  <!-- PAYSTACK -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-credit-card" style="color:var(--gold);margin-right:8px;"></i>Paystack Deposit Gateway</div>
+    <div class="toggle-item" style="margin-bottom:1rem;">
+      <div class="toggle-item-info"><div class="toggle-item-label">Enable Paystack</div><div class="toggle-item-sub">Allow users to deposit through Paystack checkout</div></div>
+      <label class="toggle"><input type="checkbox" name="paystack_enabled" {% if site.paystack_enabled %}checked{% endif %}><span class="toggle-slider"></span></label>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Public Key</label><input type="text" name="paystack_public_key" class="form-control" value="{{ site.paystack_public_key }}" placeholder="pk_live_..."></div>
+      <div class="form-group"><label class="form-label">Secret Key</label><input type="password" name="paystack_secret_key" class="form-control" placeholder="{% if site.paystack_secret_key %}•••••••• (unchanged){% else %}sk_live_...{% endif %}"><p class="form-hint">Saved only when a new value is entered.</p></div>
+      <div class="form-group"><label class="form-label">Currency</label><input type="text" name="paystack_currency" class="form-control" value="{{ site.paystack_currency }}" maxlength="10" placeholder="NGN"><p class="form-hint">Use the currency enabled on your Paystack account, such as NGN, GHS, ZAR, or USD.</p></div>
+    </div>
+  </div>
+
   <!-- BANK DETAILS -->
   <div class="card" style="margin-bottom:1.25rem;">
     <div class="card-title" style="margin-bottom:1.25rem;"><i class="fa-solid fa-building-columns" style="color:var(--gold);margin-right:8px;"></i>Bank Transfer Details</div>

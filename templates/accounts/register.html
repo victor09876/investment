@@ -58,9 +58,12 @@
         {% if settings.require_reg_code %}
         <div class="form-group"><label class="form-label">Registration Code <span style="color:var(--red);">*</span></label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-ticket"></i></span><input type="text" name="reg_code" class="form-control" placeholder="Enter your registration code" required></div>{% if form.reg_code.errors %}<p class="form-error">{{ form.reg_code.errors.0 }}</p>{% endif %}<p class="form-hint">A registration code is required to create an account.</p></div>
         {% endif %}
-        <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:1.35rem;">
-          <input type="checkbox" id="terms" required style="accent-color:var(--gold);width:15px;height:15px;margin-top:2px;cursor:pointer;flex-shrink:0;">
-          <label for="terms" style="font-size:.81rem;color:var(--muted);cursor:pointer;line-height:1.6;">I agree to the <a href="#" style="color:var(--gold);">Terms of Service</a> and <a href="#" style="color:var(--gold);">Privacy Policy</a>.</label>
+        <div style="margin-bottom:1.35rem;">
+          <div style="display:flex;align-items:flex-start;gap:9px;">
+            <input type="checkbox" id="terms" name="terms" required {% if form.terms.value %}checked{% endif %} style="accent-color:var(--gold);width:15px;height:15px;margin-top:2px;cursor:pointer;flex-shrink:0;">
+            <label for="terms" style="font-size:.81rem;color:var(--muted);cursor:pointer;line-height:1.6;">I agree to the <a href="{% url 'front_terms' %}" style="color:var(--gold);">Terms of Service</a> and <a href="{% url 'front_privacy' %}" style="color:var(--gold);">Privacy Policy</a>.</label>
+          </div>
+          {% if form.terms.errors %}<p class="form-error" style="margin-left:24px;">{{ form.terms.errors.0 }}</p>{% endif %}
         </div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">Create Free Account <i class="fa-solid fa-arrow-right"></i></button>
       </form>

@@ -92,6 +92,12 @@ class SiteSettings(models.Model):
     allow_deposit_referral_bonus = models.BooleanField(default=False)
     deposit_referral_bonus_pct   = models.DecimalField(max_digits=5, decimal_places=2, default=5)
 
+    # Paystack payment gateway
+    paystack_enabled    = models.BooleanField(default=False)
+    paystack_public_key = models.CharField(max_length=200, blank=True)
+    paystack_secret_key = models.CharField(max_length=200, blank=True)
+    paystack_currency   = models.CharField(max_length=10, default='NGN')
+
     @classmethod
     def get(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
