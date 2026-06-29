@@ -38,7 +38,8 @@
         </div>
         <div class="form-group"><label class="form-label">Email Address</label><div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input type="email" name="email" class="form-control" placeholder="you@example.com" value="{{ form.email.value|default:'' }}" required></div>{% if form.email.errors %}<p class="form-error">{{ form.email.errors.0 }}</p>{% endif %}</div>
         <div class="form-group"><label class="form-label">Country</label><select name="country" id="reg-country" class="form-control" onchange="onCountryChange('reg-country','reg-dial','reg-state')"><option value="">Select country</option></select></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        {% comment %} <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"> {% endcomment %}
+        <div class="state-phone-grid"> 
           <div class="form-group"><label class="form-label">State / Province</label><select name="state" id="reg-state" class="form-control"><option value="">Select country first</option></select></div>
           <div class="form-group"><label class="form-label">Phone Number</label>
             <div style="display:flex;gap:6px;">
