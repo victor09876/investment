@@ -15,7 +15,7 @@ class MaintenanceModeMiddleware:
             return self.get_response(request)
 
         if settings.maintenance_mode and not (request.user.is_authenticated and request.user.is_staff):
-            allowed_paths = ['/login/', '/logout/', '/panel/']
+            allowed_paths = ['/login/', '/logout/', '/panel/', '/media/', '/static/']
             if not any(request.path.startswith(p) for p in allowed_paths):
                 return render(request, 'maintenance.html', {'settings': settings}, status=503)
 
